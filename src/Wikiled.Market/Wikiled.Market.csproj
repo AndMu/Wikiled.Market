@@ -7,6 +7,8 @@
   <ItemGroup>
     <PackageReference Include="Trady.Analysis" Version="3.0.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.0.0" />
+    <PackageReference Include="Wikiled.Common" Version="1.0.8" />
+    <PackageReference Include="Wikiled.MachineLearning.SVM" Version="2.0.9" />
   </ItemGroup>
 
 </Project>
