@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>NET471</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Trady.Analysis" Version="3.0.0" />
+    <PackageReference Include="Trady.Importer.Quandl" Version="3.0.0" />
+  </ItemGroup>
+
+</Project>
