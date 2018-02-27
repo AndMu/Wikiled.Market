@@ -25,7 +25,7 @@ namespace Wikiled.Market.Integration.Tests.Analysis
         [Test]
         public async Task Construct()
         {
-            await instance.Start().ConfigureAwait(false);
+            await instance.Start("AAPL").ConfigureAwait(false);
         }
     }
 }

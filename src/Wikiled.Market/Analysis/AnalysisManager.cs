@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Trady.Analysis;
 using Trady.Core.Infrastructure;
 using Wikiled.Common.Arguments;
 
@@ -14,9 +15,11 @@ namespace Wikiled.Market.Analysis
             this.importer = importer;
         }
 
-        public async Task Start()
+        public async Task Start(string stock)
         {
-            var data = await importer.ImportAsync("AAPL").ConfigureAwait(false);
+            var data = await importer.ImportAsync(stock).ConfigureAwait(false);
+            var momentumOne = data.CloseDiff(1);
+            var momentumFive = data.CloseDiff(5);
         }
     }
 }
