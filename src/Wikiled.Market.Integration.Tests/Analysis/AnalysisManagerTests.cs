@@ -19,7 +19,6 @@ namespace Wikiled.Market.Integration.Tests.Analysis
         [TearDown]
         public void TearDown()
         {
-
         }
 
         [Test]
