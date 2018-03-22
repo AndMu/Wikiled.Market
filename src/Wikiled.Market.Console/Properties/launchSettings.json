@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Wikiled.Market.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "Generate -Stocks=AMD,GOOG,FB,SPY"
+    }
+  }
+}

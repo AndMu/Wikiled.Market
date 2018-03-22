@@ -13,7 +13,7 @@ namespace Wikiled.Market.Integration.Tests.Analysis
         [SetUp]
         public void SetUp()
         {
-            instance = new AnalysisManager(new QuandlWikiImporter(Credentials.QuandlKey));
+            instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Credentials.QuandlKey)), new ClassifierFactory());
         }
 
         [TearDown]

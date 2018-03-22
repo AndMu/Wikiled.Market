@@ -1,5 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using System.Threading;
 using Accord.MachineLearning;
 using Accord.MachineLearning.Performance;
 using Accord.MachineLearning.VectorMachines;
@@ -7,16 +7,21 @@ using Accord.MachineLearning.VectorMachines.Learning;
 using Accord.Math.Optimization.Losses;
 using Accord.Statistics.Analysis;
 using Accord.Statistics.Kernels;
-using Wikiled.MachineLearning.Svm.Logic;
+using NLog;
+using Wikiled.Common.Arguments;
 
 namespace Wikiled.Market.Analysis
 {
-    public class NewSvm
+    public class Classifier : IClassifier
     {
-        public void Classify(Problem problem)
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
+
+        private SupportVectorMachine<Gaussian> model;
+
+        public void Train(DataPackage data, CancellationToken token)
         {
-            // Ensure results are reproducible
-            Accord.Math.Random.Generator.Seed = 0;
+            Guard.NotNull(() => data, data);
+            log.Debug("Training with {0} records", data.Y.Length);
 
             // Instantiate a new Grid Search algorithm for Kernel Support Vector Machines
             var gridsearch = new GridSearch<SupportVectorMachine<Gaussian>, double[], int>()
@@ -42,31 +47,31 @@ namespace Wikiled.Market.Analysis
                 Loss = (actual, expected, m) => new ZeroOneLoss(expected).Loss(actual)
             };
 
-            // If needed, control the degree of CPU parallelization
-            gridsearch.ParallelOptions.MaxDegreeOfParallelism = Environment.ProcessorCount / 2;
+            gridsearch.Token = token;
 
             // Search for the best model parameters
-            var inputs = problem.X.Select(item => item.Select(x => x.Value).ToArray()).ToArray();
-            var result = gridsearch.Learn(inputs, problem.Y);
+            var inputs = Accord.Statistics.Tools.Standardize(data.X);
+            var result = gridsearch.Learn(inputs, data.Y);
 
             // Get the best SVM found during the parameter search
             SupportVectorMachine<Gaussian> svm = result.BestModel;
-
-            var predicted = svm.Decide(inputs).Select(item => item ? 1 : 0).ToArray();
-            var cm = new GeneralConfusionMatrix(classes: 2, expected: problem.Y, predicted: predicted);
-            var fScoreNegative = cm.PerClassMatrices[0].FScore;
-            var fScorePostive = cm.PerClassMatrices[1].FScore;
 
             // Instantiate the probabilistic calibration (using Platt's scaling)
             var calibration = new ProbabilisticOutputCalibration<Gaussian>(svm);
             
             // Run the calibration algorithm
-            calibration.Learn(inputs, problem.Y); // returns the same machine
+            calibration.Learn(inputs, data.Y); // returns the same machine
+            model = calibration.Model;
+            var predicted = Classify(inputs);
+            var confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: data.Y, predicted: predicted);
+            log.Debug("Trained performance. F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
+        }
 
-            predicted = calibration.Model.Decide(inputs).Select(item => item ? 1 : 0).ToArray();
-            var cm2 = new GeneralConfusionMatrix(classes: 2, expected: problem.Y, predicted: predicted);
-            var fScoreNegativeScaled = cm2.PerClassMatrices[0].FScore;
-            var fScorePostiveScaled = cm2.PerClassMatrices[1].FScore;
+        public int[] Classify(double[][] x)
+        {
+            log.Debug("Classify");
+            Guard.NotNull(() => x, x);
+            return model.Decide(x).Select(item => item ? 1 : -1).ToArray();
         }
     }
 }
