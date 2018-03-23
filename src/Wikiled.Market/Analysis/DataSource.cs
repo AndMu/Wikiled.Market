@@ -13,6 +13,8 @@ namespace Wikiled.Market.Analysis
     {
         private readonly IImporter importer;
 
+        private readonly int marketChangeInDays = 5;
+
         private IReadOnlyList<AnalyzableTick<decimal?>> adx;
 
         private IReadOnlyList<AnalyzableTick<decimal?>> atr;
@@ -20,8 +22,6 @@ namespace Wikiled.Market.Analysis
         private IReadOnlyList<AnalyzableTick<(decimal? LowerBand, decimal? MiddleBand, decimal? UpperBand)>> bb;
 
         private IReadOnlyList<AnalyzableTick<(decimal? MacdLine, decimal? SignalLine, decimal? MacdHistogram)>> macd;
-
-        private readonly int marketChangeInDays = 5;
 
         private IReadOnlyList<AnalyzableTick<decimal?>> momentumFive;
 

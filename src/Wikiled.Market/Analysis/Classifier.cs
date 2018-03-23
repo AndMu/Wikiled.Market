@@ -4,6 +4,7 @@ using Accord.MachineLearning;
 using Accord.MachineLearning.Performance;
 using Accord.MachineLearning.VectorMachines;
 using Accord.MachineLearning.VectorMachines.Learning;
+using Accord.Math;
 using Accord.Math.Optimization.Losses;
 using Accord.Statistics.Analysis;
 using Accord.Statistics.Kernels;
@@ -18,10 +19,27 @@ namespace Wikiled.Market.Analysis
 
         private SupportVectorMachine<Gaussian> model;
 
+        private double[][] xOriginal;
+
         public void Train(DataPackage data, CancellationToken token)
         {
             Guard.NotNull(() => data, data);
             log.Debug("Training with {0} records", data.Y.Length);
+
+            xOriginal = data.X;
+
+            var xTraining = data.X;
+            var yTraining = data.Y;
+
+            var xTesting = xTraining;
+            var yTesting = yTraining;
+
+            int testSize = 100;
+            if (xTraining.Length > testSize * 4)
+            {
+                xTesting = xTraining.Skip(xTraining.Length - 30).ToArray();
+                yTesting = yTraining.Skip(xTraining.Length - 30).ToArray();
+            }
 
             // Instantiate a new Grid Search algorithm for Kernel Support Vector Machines
             var gridsearch = new GridSearch<SupportVectorMachine<Gaussian>, double[], int>()
@@ -50,8 +68,8 @@ namespace Wikiled.Market.Analysis
             gridsearch.Token = token;
 
             // Search for the best model parameters
-            var inputs = Accord.Statistics.Tools.Standardize(data.X);
-            var result = gridsearch.Learn(inputs, data.Y);
+            xTraining = Accord.Statistics.Tools.Standardize(xTraining);
+            var result = gridsearch.Learn(xTraining, yTraining);
 
             // Get the best SVM found during the parameter search
             SupportVectorMachine<Gaussian> svm = result.BestModel;
@@ -60,17 +78,24 @@ namespace Wikiled.Market.Analysis
             var calibration = new ProbabilisticOutputCalibration<Gaussian>(svm);
             
             // Run the calibration algorithm
-            calibration.Learn(inputs, data.Y); // returns the same machine
+            calibration.Learn(xTraining, yTraining); // returns the same machine
             model = calibration.Model;
-            var predicted = Classify(inputs);
-            var confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: data.Y, predicted: predicted);
-            log.Debug("Trained performance. F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
+            var predicted = Classify(xTraining);
+            var confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: yTraining, predicted: predicted);
+            log.Debug("Performance on training dataset . F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
+
+            predicted = Classify(xTesting);
+            confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: yTesting, predicted: predicted);
+            log.Debug("Performance on testing dataset . F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
         }
 
         public int[] Classify(double[][] x)
         {
             log.Debug("Classify");
             Guard.NotNull(() => x, x);
+            var length = x.Length;
+            x = xOriginal.Concat(x).ToArray();
+            x = Accord.Statistics.Tools.Standardize(x).Skip(x.Length - length).ToArray();
             return model.Decide(x).Select(item => item ? 1 : -1).ToArray();
         }
     }

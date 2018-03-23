@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="NLog" Version="4.5.0-rc07" />
     <PackageReference Include="Wikiled.Common" Version="1.0.11" />
-    <PackageReference Include="Wikiled.Console" Version="1.0.2" />
+    <PackageReference Include="Wikiled.Console" Version="1.0.5" />
   </ItemGroup>
 
   <ItemGroup>
