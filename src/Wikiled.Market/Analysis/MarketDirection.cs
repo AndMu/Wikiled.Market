@@ -2,7 +2,7 @@
 {
     public enum MarketDirection
     {
-        Bullish = 1,
-        Bearish = -1
+        Buy = 1,
+        Sell = -1
     }
 }

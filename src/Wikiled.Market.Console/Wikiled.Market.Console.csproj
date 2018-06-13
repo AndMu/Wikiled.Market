@@ -1,14 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>NET471</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.5.0-rc07" />
+    <PackageReference Include="NLog" Version="4.5.6" />
     <PackageReference Include="Wikiled.Common" Version="1.0.11" />
-    <PackageReference Include="Wikiled.Console" Version="1.0.5" />
+    <PackageReference Include="Wikiled.Console" Version="1.0.6" />
+    <PackageReference Include="Wikiled.Twitter" Version="1.2.38" />
+    <PackageReference Include="Accord" Version="3.8.0" />
+    <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
+    <PackageReference Include="Accord.Math" Version="3.8.0" />
+    <PackageReference Include="Trady.Analysis" Version="3.0.0" />
+    <PackageReference Include="Trady.Importer.Quandl" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

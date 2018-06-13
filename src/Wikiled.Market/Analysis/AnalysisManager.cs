@@ -26,7 +26,7 @@ namespace Wikiled.Market.Analysis
             var data = await dataSource.GetData(stock, DateTime.Today.AddYears(-20), DateTime.Today).ConfigureAwait(false);
             await Task.Run(() => classifier.Train(data, CancellationToken.None)).ConfigureAwait(false);
             var result = classifier.Classify(data.Prediction);
-            return new PredictionResult(result.Select(item => (MarketDirection)item).ToArray());
+            return new PredictionResult(result.Select(item => (MarketDirection)item).ToArray(), classifier.TestSetPerformance);
         }
     }
 }

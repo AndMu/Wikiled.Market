@@ -4,12 +4,12 @@ using Accord.MachineLearning;
 using Accord.MachineLearning.Performance;
 using Accord.MachineLearning.VectorMachines;
 using Accord.MachineLearning.VectorMachines.Learning;
-using Accord.Math;
 using Accord.Math.Optimization.Losses;
 using Accord.Statistics.Analysis;
 using Accord.Statistics.Kernels;
 using NLog;
 using Wikiled.Common.Arguments;
+using Wikiled.MachineLearning.Normalization;
 
 namespace Wikiled.Market.Analysis
 {
@@ -19,15 +19,16 @@ namespace Wikiled.Market.Analysis
 
         private SupportVectorMachine<Gaussian> model;
 
-        private double[][] xOriginal;
+        private Standardizer standardizer;
+
+        public GeneralConfusionMatrix TestSetPerformance { get; private set;}
 
         public void Train(DataPackage data, CancellationToken token)
         {
             Guard.NotNull(() => data, data);
             log.Debug("Training with {0} records", data.Y.Length);
 
-            xOriginal = data.X;
-
+            standardizer = Standardizer.GetNumericStandardizer(data.X);
             var xTraining = data.X;
             var yTraining = data.Y;
 
@@ -35,11 +36,18 @@ namespace Wikiled.Market.Analysis
             var yTesting = yTraining;
 
             int testSize = 100;
+            
             if (xTraining.Length > testSize * 4)
             {
-                xTesting = xTraining.Skip(xTraining.Length - 30).ToArray();
-                yTesting = yTraining.Skip(xTraining.Length - 30).ToArray();
+                var training = xTraining.Length - testSize;
+                xTesting = xTraining.Skip(training).ToArray();
+                yTesting = yTraining.Skip(training).ToArray();
+                xTraining = xTraining.Take(training).ToArray();
+                yTraining = yTraining.Take(training).ToArray();
             }
+
+
+            xTraining = standardizer.StandardizeAll(xTraining);
 
             // Instantiate a new Grid Search algorithm for Kernel Support Vector Machines
             var gridsearch = new GridSearch<SupportVectorMachine<Gaussian>, double[], int>()
@@ -69,6 +77,7 @@ namespace Wikiled.Market.Analysis
 
             // Search for the best model parameters
             xTraining = Accord.Statistics.Tools.Standardize(xTraining);
+            
             var result = gridsearch.Learn(xTraining, yTraining);
 
             // Get the best SVM found during the parameter search
@@ -80,12 +89,13 @@ namespace Wikiled.Market.Analysis
             // Run the calibration algorithm
             calibration.Learn(xTraining, yTraining); // returns the same machine
             model = calibration.Model;
-            var predicted = Classify(xTraining);
+            var predicted = ClassifyInternal(xTraining);
             var confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: yTraining, predicted: predicted);
             log.Debug("Performance on training dataset . F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
 
             predicted = Classify(xTesting);
             confusionMatrix = new GeneralConfusionMatrix(classes: 2, expected: yTesting, predicted: predicted);
+            TestSetPerformance = confusionMatrix;
             log.Debug("Performance on testing dataset . F1(0):{0} F1(1):{1}", confusionMatrix.PerClassMatrices[0].FScore, confusionMatrix.PerClassMatrices[1].FScore);
         }
 
@@ -93,9 +103,12 @@ namespace Wikiled.Market.Analysis
         {
             log.Debug("Classify");
             Guard.NotNull(() => x, x);
-            var length = x.Length;
-            x = xOriginal.Concat(x).ToArray();
-            x = Accord.Statistics.Tools.Standardize(x).Skip(x.Length - length).ToArray();
+            x = standardizer.StandardizeAll(x);
+            return ClassifyInternal(x);
+        }
+
+        private int[] ClassifyInternal(double[][] x)
+        {
             return model.Decide(x).Select(item => item ? 1 : -1).ToArray();
         }
     }

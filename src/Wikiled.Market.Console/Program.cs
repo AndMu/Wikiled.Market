@@ -1,13 +1,14 @@
-﻿using Wikiled.Console.Arguments;
+﻿using System.Threading.Tasks;
+using Wikiled.Console.Arguments;
 
 namespace Wikiled.Market.Console
 {
     internal class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             AutoStarter starter = new AutoStarter("Market Utility");
-            starter.Start(args);
+            await starter.Start(args);
         }
     }
 }

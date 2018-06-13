@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Trady.Analysis;
 using Trady.Core.Infrastructure;
+using Wikiled.Arff.Extensions;
 using Wikiled.Arff.Persistence;
 using Wikiled.Common.Arguments;
 
@@ -72,7 +73,7 @@ namespace Wikiled.Market.Analysis
             {
                 var document = testing.AddDocument();
                 AddSignals(document, i);
-                document.Class.Value = MarketDirection.Bullish;
+                document.Class.Value = MarketDirection.Buy;
             }
 
             return testing;
@@ -85,7 +86,7 @@ namespace Wikiled.Market.Analysis
             {
                 var document = training.AddDocument();
                 AddSignals(document, i);
-                document.Class.Value = momentumFive[i + marketChangeInDays].Tick > 0 ? MarketDirection.Bullish : MarketDirection.Bearish;
+                document.Class.Value = momentumFive[i + marketChangeInDays].Tick > 0 ? MarketDirection.Buy : MarketDirection.Sell;
             }
 
             return training;
