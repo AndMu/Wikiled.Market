@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using Accord.MachineLearning;
 using Accord.MachineLearning.Performance;
@@ -9,6 +10,7 @@ using Accord.Statistics.Analysis;
 using Accord.Statistics.Kernels;
 using NLog;
 using Wikiled.Common.Arguments;
+using Wikiled.MachineLearning.Mathematics;
 using Wikiled.MachineLearning.Normalization;
 
 namespace Wikiled.Market.Analysis
@@ -46,9 +48,7 @@ namespace Wikiled.Market.Analysis
                 yTraining = yTraining.Take(training).ToArray();
             }
 
-
             xTraining = standardizer.StandardizeAll(xTraining);
-
             // Instantiate a new Grid Search algorithm for Kernel Support Vector Machines
             var gridsearch = new GridSearch<SupportVectorMachine<Gaussian>, double[], int>()
             {
@@ -75,9 +75,10 @@ namespace Wikiled.Market.Analysis
 
             gridsearch.Token = token;
 
-            // Search for the best model parameters
-            xTraining = Accord.Statistics.Tools.Standardize(xTraining);
-            
+            var randomized = new Random().Shuffle(xTraining, yTraining).ToArray();
+            yTraining = randomized[1].Cast<int>().ToArray();
+            xTraining = randomized[0].Cast<double[]>().ToArray();
+
             var result = gridsearch.Learn(xTraining, yTraining);
 
             // Get the best SVM found during the parameter search
