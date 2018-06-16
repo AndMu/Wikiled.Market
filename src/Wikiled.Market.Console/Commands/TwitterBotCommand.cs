@@ -36,7 +36,7 @@ namespace Wikiled.Market.Console.Commands
             RateLimit.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
             if (IsKeyAuth)
             {
-                cred = Analysis.Credentials.TwitterAppCredentials;
+                cred = Analysis.Credentials.TwitterCredentials;
                 if (string.IsNullOrWhiteSpace(cred.ConsumerKey) ||
                    string.IsNullOrWhiteSpace(cred.ConsumerSecret))
                 {

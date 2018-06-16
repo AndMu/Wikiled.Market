@@ -13,7 +13,7 @@
     <PackageReference Include="Wikiled.Arff" Version="2.1.2" />
     <PackageReference Include="Wikiled.Common" Version="1.0.11" />
     <PackageReference Include="Wikiled.MachineLearning" Version="2.1.5" />
-    <PackageReference Include="Wikiled.Twitter" Version="1.2.38" />
+    <PackageReference Include="Wikiled.Twitter" Version="1.2.50" />
   </ItemGroup>
 
 </Project>
