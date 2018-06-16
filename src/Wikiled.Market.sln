@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.Market.Tests", "Wik
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.Market.Integration.Tests", "Wikiled.Market.Integration.Tests\Wikiled.Market.Integration.Tests.csproj", "{0B410A22-A24C-40DF-9BDB-7376AD865C04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wikiled.Market.Console", "Wikiled.Market.Console\Wikiled.Market.Console.csproj", "{1D791193-9439-4423-B065-8DC2F1A241D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.Market.Console", "Wikiled.Market.Console\Wikiled.Market.Console.csproj", "{1D791193-9439-4423-B065-8DC2F1A241D1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E91C7C42-EAC1-450F-9D0A-1408416A82C2}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

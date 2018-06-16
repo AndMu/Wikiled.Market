@@ -28,12 +28,26 @@ namespace Wikiled.Market.Console.Commands
         [Description("For what stocks generate prediction")]
         public string Stocks { get; set; }
 
+        public bool IsKeyAuth { get; set; }
+
         public override Task Execute()
         {
             log.Info("Loading security...");
             RateLimit.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
-            var auth = new PersistedAuthentication(new PinConsoleAuthentication());
-            cred = auth.Authenticate(Analysis.Credentials.TwitterCredentials);
+            if (IsKeyAuth)
+            {
+                var appKey = Environment.GetEnvironmentVariable("AppKey");
+                var appSecret = Environment.GetEnvironmentVariable("AppSecret");
+                var consumerKey = Environment.GetEnvironmentVariable("CONSUMER_KEY");
+                var consumnerSecret = Environment.GetEnvironmentVariable("CONSUMER_SECRET");
+                cred = new TwitterCredentials(consumerKey, consumnerSecret, appKey, appSecret);
+            }
+            else
+            {
+                var auth = new PersistedAuthentication(new PinConsoleAuthentication());
+                cred = auth.Authenticate(Analysis.Credentials.TwitterCredentials);
+            }
+            
             Process();
             return Task.CompletedTask;
         }
