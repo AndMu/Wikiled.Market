@@ -36,18 +36,30 @@ namespace Wikiled.Market.Console.Commands
             RateLimit.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
             if (IsKeyAuth)
             {
-                var appKey = Environment.GetEnvironmentVariable("AppKey");
-                var appSecret = Environment.GetEnvironmentVariable("AppSecret");
-                var consumerKey = Environment.GetEnvironmentVariable("CONSUMER_KEY");
-                var consumnerSecret = Environment.GetEnvironmentVariable("CONSUMER_SECRET");
-                cred = new TwitterCredentials(consumerKey, consumnerSecret, appKey, appSecret);
+                cred = Analysis.Credentials.TwitterAppCredentials;
+                if (string.IsNullOrWhiteSpace(cred.ConsumerKey) ||
+                   string.IsNullOrWhiteSpace(cred.ConsumerSecret))
+                {
+                    throw new ArgumentNullException("Consumer key not found");
+                }
             }
             else
             {
                 var auth = new PersistedAuthentication(new PinConsoleAuthentication());
                 cred = auth.Authenticate(Analysis.Credentials.TwitterCredentials);
             }
-            
+
+            if (string.IsNullOrWhiteSpace(cred.AccessToken) ||
+                string.IsNullOrWhiteSpace(cred.AccessTokenSecret))
+            {
+                throw new ArgumentNullException("Access token not found");
+            }
+
+            if (string.IsNullOrWhiteSpace(Analysis.Credentials.QuandlKey))
+            {
+                throw new ArgumentNullException("QuandlKey not found");
+            }
+
             Process();
             return Task.CompletedTask;
         }

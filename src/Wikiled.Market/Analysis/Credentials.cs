@@ -6,14 +6,15 @@ namespace Wikiled.Market.Analysis
 {
     public static class Credentials
     {
-        // git update-index --assume-unchanged Credentials.cs
-        // git update-index --no-assume-unchanged Credentials.cs
-        // git ls-files -v|grep '^h'
+        public static string QuandlKey { get; } = Environment.GetEnvironmentVariable("QuandlKey");
 
-        public static string QuandlKey => Environment.GetEnvironmentVariable("QuandlKey") ?? "YOUR_API_KEY";
-        
-        public static ITwitterCredentials TwitterCredentials => Auth.SetApplicationOnlyCredentials(
-            Environment.GetEnvironmentVariable("AppKey") ?? "YOUR_API_KEY",
-            Environment.GetEnvironmentVariable("AppSecret") ?? "YOUR_API_Secret");
+        public static ITwitterCredentials TwitterAppCredentials { get; } =
+            Auth.SetApplicationOnlyCredentials(Environment.GetEnvironmentVariable("AppKey"), Environment.GetEnvironmentVariable("AppSecret"));
+
+        public static ITwitterCredentials TwitterCredentials { get; } = new TwitterCredentials(
+            Environment.GetEnvironmentVariable("CONSUMER_KEY"),
+            Environment.GetEnvironmentVariable("CONSUMER_SECRET"),
+            Environment.GetEnvironmentVariable("AppKey"),
+            Environment.GetEnvironmentVariable("AppSecret"));
     }
 }
