@@ -43,6 +43,9 @@ namespace Wikiled.Market.Console.Commands
                 {
                     throw new ArgumentNullException("Consumer key not found");
                 }
+
+                log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.ConsumerKey);
+                log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.ConsumerSecret);
             }
             else
             {
@@ -55,6 +58,9 @@ namespace Wikiled.Market.Console.Commands
             {
                 throw new ArgumentNullException("Access token not found");
             }
+
+            log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.AccessToken);
+            log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.AccessTokenSecret);
 
             if (string.IsNullOrWhiteSpace(Analysis.Credentials.QuandlKey))
             {
