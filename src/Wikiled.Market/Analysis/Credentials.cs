@@ -14,7 +14,7 @@ namespace Wikiled.Market.Analysis
         public static ITwitterCredentials TwitterCredentials { get; } = new TwitterCredentials(
             Environment.GetEnvironmentVariable("CONSUMER_KEY")?.Trim(),
             Environment.GetEnvironmentVariable("CONSUMER_SECRET")?.Trim(),
-            Environment.GetEnvironmentVariable("AppKey")?.Trim(),
-            Environment.GetEnvironmentVariable("AppSecret")?.Trim());
+            Environment.GetEnvironmentVariable("APP_KEY")?.Trim(),
+            Environment.GetEnvironmentVariable("APP_SECRET")?.Trim());
     }
 }
