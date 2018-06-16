@@ -60,6 +60,8 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("QuandlKey not found");
             }
 
+            log.Info("Using key: [{0}]", Analysis.Credentials.QuandlKey);
+
             Process();
             return Task.CompletedTask;
         }
