@@ -8,6 +8,8 @@ using Trady.Importer;
 using Tweetinvi;
 using Tweetinvi.Models;
 using Tweetinvi.Parameters;
+using Wikiled.Common.Utilities.Config;
+using Wikiled.Common.Utilities.Rx;
 using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 using Wikiled.Twitter.Security;
@@ -20,6 +22,8 @@ namespace Wikiled.Market.Console.Commands
     public class TwitterBotCommand : Command
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
+
+        private ApplicationConfiguration configuration = new ApplicationConfiguration();
 
         private ITwitterCredentials cred;
 
@@ -43,9 +47,6 @@ namespace Wikiled.Market.Console.Commands
                 {
                     throw new ArgumentNullException("Consumer key not found");
                 }
-
-                log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.ConsumerKey);
-                log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.ConsumerSecret);
             }
             else
             {
@@ -59,15 +60,10 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("Access token not found");
             }
 
-            log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.AccessToken);
-            log.Info("Using key: [{0}]", Analysis.Credentials.TwitterCredentials.AccessTokenSecret);
-
             if (string.IsNullOrWhiteSpace(Analysis.Credentials.QuandlKey))
             {
                 throw new ArgumentNullException("QuandlKey not found");
             }
-
-            log.Info("Using key: [{0}]", Analysis.Credentials.QuandlKey);
 
             Process();
             return Task.CompletedTask;
@@ -76,7 +72,8 @@ namespace Wikiled.Market.Console.Commands
         private void Process()
         {
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Analysis.Credentials.QuandlKey)), new ClassifierFactory());
-            using (Observable.Interval(TimeSpan.FromHours(12)).StartWith(0).Subscribe(item => ProcessMarket(instance)))
+            var timer = new ObservableTimer(configuration);
+            using (timer.Daily(TimeSpan.FromHours(6)).Subscribe(item => ProcessMarket(instance)))
             {
                 log.Info("Press enter to stop");
                 System.Console.ReadLine();
