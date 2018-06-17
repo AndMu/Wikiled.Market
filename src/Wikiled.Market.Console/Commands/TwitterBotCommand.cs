@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Trady.Importer;
@@ -23,9 +24,11 @@ namespace Wikiled.Market.Console.Commands
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
-        private ApplicationConfiguration configuration = new ApplicationConfiguration();
+        private readonly ApplicationConfiguration configuration = new ApplicationConfiguration();
 
         private ITwitterCredentials cred;
+
+        private IDisposable timer = default;
 
         public override string Name => "Bot";
 
@@ -34,7 +37,13 @@ namespace Wikiled.Market.Console.Commands
 
         public bool IsKeyAuth { get; set; }
 
-        public override Task Execute()
+        public override Task StopExecution(CancellationToken token)
+        {
+            timer?.Dispose();
+            return base.StopExecution(token);
+        }
+
+        protected override Task Execute(CancellationToken token)
         {
             log.Info("Loading security...");
             RateLimit.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
@@ -72,12 +81,8 @@ namespace Wikiled.Market.Console.Commands
         private void Process()
         {
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Analysis.Credentials.QuandlKey)), new ClassifierFactory());
-            var timer = new ObservableTimer(configuration);
-            using (timer.Daily(TimeSpan.FromHours(6)).Subscribe(item => ProcessMarket(instance)))
-            {
-                log.Info("Press enter to stop");
-                System.Console.ReadLine();
-            }
+            var timerCreator = new ObservableTimer(configuration);
+            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Subscribe(item => ProcessMarket(instance));
         }
 
         private void ProcessMarket(AnalysisManager instance)

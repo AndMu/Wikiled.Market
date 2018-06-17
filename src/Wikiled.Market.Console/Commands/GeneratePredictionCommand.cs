@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Trady.Importer;
@@ -17,7 +18,7 @@ namespace Wikiled.Market.Console.Commands
         [Description("For what stocks generate prediction")]
         public string Stocks { get; set; }
 
-        public override Task Execute()
+        protected override Task Execute(CancellationToken token)
         {
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Credentials.QuandlKey)), new ClassifierFactory());
             var stocks = Stocks.Split(',');
