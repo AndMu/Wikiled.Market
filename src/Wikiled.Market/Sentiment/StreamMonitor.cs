@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Tweetinvi.Models.DTO;
 using Wikiled.Twitter.Persistency;
 using Wikiled.Twitter.Security;
@@ -24,13 +25,12 @@ namespace Wikiled.Market.Sentiment
             this.sentiment = sentiment ?? throw new ArgumentNullException(nameof(sentiment));
         }
 
-
-        public void Start(string path, string[] keywords)
+        public void Start(string path, IStockTracker[] trackers)
         {
             streamSource = new TimingStreamSource(path, TimeSpan.FromDays(1));
             serializer = new FlatFileSerializer(streamSource);
             stream = new MonitoringStream(this, authentication);
-            stream.Start(keywords, null);
+            stream.Start(trackers.Select(item => item.Stock).ToArray(), new string[]{});
         }
 
         public void Dispose()

@@ -4,6 +4,6 @@ namespace Wikiled.Market.Sentiment
 {
     public interface ISentimentAnalysis
     {
-        Task<double> MeasureSentiment(string text);
+        Task<double?> MeasureSentiment(string text);
     }
 }
