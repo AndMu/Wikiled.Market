@@ -71,8 +71,8 @@ namespace Wikiled.Market.Console.Commands
             }
             else
             {
-                var auth = new PersistedAuthentication(new PinConsoleAuthentication());
-                cred = auth.Authenticate(Analysis.Credentials.TwitterCredentials);
+                var auth = new PersistedAuthentication(new PinConsoleAuthentication(Analysis.Credentials.TwitterCredentials));
+                cred = auth.Authenticate();
             }
 
             if (string.IsNullOrWhiteSpace(cred.AccessToken) ||
