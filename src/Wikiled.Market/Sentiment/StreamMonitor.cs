@@ -5,6 +5,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NLog;
+using Tweetinvi.Models;
 using Tweetinvi.Models.DTO;
 using Wikiled.Common.Extensions;
 using Wikiled.Text.Analysis.Twitter;
@@ -56,6 +57,7 @@ namespace Wikiled.Market.Sentiment
             streamSource = new TimingStreamSource(path, TimeSpan.FromDays(1));
             serializer = new FlatFileSerializer(streamSource);
             stream = new MonitoringStream(authentication);
+            stream.LanguageFilters = new[] {LanguageFilter.English};
             subscription = stream.MessagesReceiving
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Select(Save)
