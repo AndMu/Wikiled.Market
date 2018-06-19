@@ -66,7 +66,7 @@ namespace Wikiled.Market.Sentiment
                 {
                     log.Debug("Processed message: {0}", item.Text);
                 });
-            Task.Factory.StartNew(async () => await stream.Start(Trackers.Select(item => item.Stock).ToArray(), new string[] { }), TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(async () => await stream.Start(Trackers.Select(item => item.Twitter).ToArray(), new string[] { }), TaskCreationOptions.LongRunning);
         }
 
         public void Dispose()

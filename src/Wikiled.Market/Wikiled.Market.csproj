@@ -13,10 +13,10 @@
     <PackageReference Include="Wikiled.Arff" Version="2.1.2" />
     <PackageReference Include="Wikiled.Common" Version="1.0.11" />
     <PackageReference Include="Wikiled.Common.Net" Version="1.0.3" />
-    <PackageReference Include="Wikiled.Common.Utilities" Version="1.0.1" />
+    <PackageReference Include="Wikiled.Common.Utilities" Version="1.0.2" />
     <PackageReference Include="Wikiled.MachineLearning" Version="2.1.9" />
     <PackageReference Include="Wikiled.Sentiment.Api" Version="1.0.32" />
-    <PackageReference Include="Wikiled.Twitter" Version="1.2.53" />
+    <PackageReference Include="Wikiled.Twitter" Version="1.3.0" />
   </ItemGroup>
 
 </Project>

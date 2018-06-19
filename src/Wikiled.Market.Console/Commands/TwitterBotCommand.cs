@@ -142,7 +142,7 @@ namespace Wikiled.Market.Console.Commands
                 cred,
                 () =>
                     {
-                        var message = Tweet.PublishTweet(text, new PublishTweetOptionalParameters { });
+                        var message = Tweet.PublishTweet(text, new PublishTweetOptionalParameters());
                         if (message == null)
                         {
                             var exception = ExceptionHandler.GetLastException();
