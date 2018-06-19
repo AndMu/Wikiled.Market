@@ -23,7 +23,7 @@ namespace Wikiled.Market.Tests.Sentiment
         [Test]
         public void Construct()
         {
-            Assert.Throws<ArgumentNullException>(() => new SentimentAnalysis(mockStreamApiClient.Object));
+            Assert.Throws<ArgumentNullException>(() => new SentimentAnalysis(null));
         }
 
         private SentimentAnalysis CreateSentimentAnalysis()
