@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using NLog;
 using Tweetinvi.Models;
 using Tweetinvi.Models.DTO;
@@ -23,15 +24,19 @@ namespace Wikiled.Market.Sentiment
 
         private MonitoringStream stream;
 
-        private FlatFileSerializer serializer;
-
         private readonly IAuthentication authentication;
 
         private readonly ISentimentAnalysis sentiment;
 
         private IDisposable subscription;
 
+        private TwitPersistency persistency;
+
         private readonly Extractor extractor = new Extractor();
+
+        private readonly MemoryCache cache = new MemoryCache(new MemoryCacheOptions());
+
+        private DublicateDetectors dublicateDetectors;
 
         private readonly Dictionary<string, IStockTracker> trackersTable = new Dictionary<string, IStockTracker>(StringComparer.OrdinalIgnoreCase);
 
@@ -54,10 +59,11 @@ namespace Wikiled.Market.Sentiment
             }
 
             path.EnsureDirectoryExistence();
+            dublicateDetectors = new DublicateDetectors(cache);
             streamSource = new TimingStreamSource(path, TimeSpan.FromDays(1));
-            serializer = new FlatFileSerializer(streamSource);
             stream = new MonitoringStream(authentication);
-            stream.LanguageFilters = new[] {LanguageFilter.English};
+            persistency = new TwitPersistency(streamSource);
+            stream.LanguageFilters = new[] { LanguageFilter.English };
             subscription = stream.MessagesReceiving
                 .ObserveOn(TaskPoolScheduler.Default)
                 .Select(Save)
@@ -74,12 +80,18 @@ namespace Wikiled.Market.Sentiment
             subscription?.Dispose();
             streamSource?.Dispose();
             stream?.Dispose();
+            cache.Dispose();
         }
 
         private async Task<ITweetDTO> Save(ITweetDTO tweet)
         {
-            var saveTask = Task.Run(() => serializer?.Save(tweet));
+            if (dublicateDetectors.HasReceived(tweet.Text))
+            {
+                return tweet;
+            }
+
             var sentimentValue = await sentiment.MeasureSentiment(tweet.Text);
+            var saveTask = Task.Run(() => persistency?.Save(tweet, sentimentValue));
             foreach (var cashTag in extractor.ExtractCashtags(tweet.Text))
             {
                 if (trackersTable.TryGetValue(cashTag, out var tracker))
