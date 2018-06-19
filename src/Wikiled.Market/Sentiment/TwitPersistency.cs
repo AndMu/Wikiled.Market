@@ -19,7 +19,7 @@ namespace Wikiled.Market.Sentiment
 
         public void Save(ITweetDTO message, double? sentiment)
         {
-            var text = message.Text.Replace("\r\n", " ");
+            var text = message.Text.Replace("\r\n", " ").Replace("\n", " ");
             lock (syncRoot)
             {
                 var stream = streamSource.GetStream();
