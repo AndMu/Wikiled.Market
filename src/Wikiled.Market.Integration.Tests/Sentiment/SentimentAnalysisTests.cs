@@ -21,7 +21,7 @@ namespace Wikiled.Market.Integration.Tests.Sentiment
         [Test]
         public async Task SimpleTest()
         {
-            var result = await instance.MeasureSentiment(" ");
+            var result = await instance.MeasureSentiment("Sell and short it");
             Assert.AreEqual(-1, result);
         }
 
