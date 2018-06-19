@@ -23,7 +23,7 @@ namespace Wikiled.Market.Tests.Sentiment
         [Test]
         public void Construct()
         {
-            Assert.Throws<ArgumentNullException>(() => new DublicateDetectors(mockMemoryCache.Object));
+            Assert.Throws<ArgumentNullException>(() => new DublicateDetectors(null));
         }
 
         private DublicateDetectors CreateDublicateDetectors()
