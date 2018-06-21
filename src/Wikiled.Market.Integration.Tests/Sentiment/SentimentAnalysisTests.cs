@@ -10,7 +10,7 @@ namespace Wikiled.Market.Integration.Tests.Sentiment
     [TestFixture]
     public class SentimentAnalysisTests
     {
-        private SentimentAnalysis instance;
+        private TwitterAnalysis instance;
 
         [SetUp]
         public void SetUp()
@@ -21,13 +21,13 @@ namespace Wikiled.Market.Integration.Tests.Sentiment
         [Test]
         public async Task SimpleTest()
         {
-            var result = await instance.MeasureSentiment("Sell and short it");
+            var result = await instance.GetSentiment("Sell and short it");
             Assert.AreEqual(-1, result);
         }
 
-        private SentimentAnalysis CreateSentimentAnalysis()
+        private TwitterAnalysis CreateSentimentAnalysis()
         {
-            return new SentimentAnalysis(new StreamApiClient(new HttpClient(), new Uri("http://sentiment.wikiled.com/api/sentiment/")));
+            return new TwitterAnalysis(new StreamApiClient(new HttpClient(), new Uri("http://sentiment.wikiled.com/api/sentiment/")));
         }
     }
 }

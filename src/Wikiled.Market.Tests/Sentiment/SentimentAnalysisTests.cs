@@ -11,7 +11,7 @@ namespace Wikiled.Market.Tests.Sentiment
     {
         private Mock<IStreamApiClient> mockStreamApiClient;
 
-        private SentimentAnalysis instance;
+        private TwitterAnalysis instance;
 
         [SetUp]
         public void SetUp()
@@ -23,12 +23,12 @@ namespace Wikiled.Market.Tests.Sentiment
         [Test]
         public void Construct()
         {
-            Assert.Throws<ArgumentNullException>(() => new SentimentAnalysis(null));
+            Assert.Throws<ArgumentNullException>(() => new TwitterAnalysis(null));
         }
 
-        private SentimentAnalysis CreateSentimentAnalysis()
+        private TwitterAnalysis CreateSentimentAnalysis()
         {
-            return new SentimentAnalysis(mockStreamApiClient.Object);
+            return new TwitterAnalysis(mockStreamApiClient.Object);
         }
     }
 }
