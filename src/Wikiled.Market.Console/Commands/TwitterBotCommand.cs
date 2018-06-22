@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -149,8 +148,7 @@ namespace Wikiled.Market.Console.Commands
                 var sentiment = await sentimentTask;
                 if (sentiment != null)
                 {
-                    text.AppendLine($"Total twitter messages {sentiment.Total} with average sentiment:");
-                    ExtractResult(sentiment, text);
+                    text.AppendFormat("Average sentiment: {0}({1})\r\n", sentiment.Sentiment["24H"].AverageSentiment, sentiment.Sentiment["24H"].TotalMessages);
                 }
                 else
                 {
