@@ -8,8 +8,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NLog;
+using NLog.Extensions.Logging;
 using Trady.Importer;
 using Tweetinvi;
 using Tweetinvi.Models;
@@ -21,6 +23,7 @@ using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
 using Wikiled.Market.Sentiment;
+using Wikiled.Twitter.Monitor.Api.Response;
 using Wikiled.Twitter.Security;
 using Credentials = Wikiled.Market.Analysis.Credentials;
 
@@ -45,6 +48,8 @@ namespace Wikiled.Market.Console.Commands
 
         private IDisposable twitterTimer = null;
 
+        private ILoggerFactory factory;
+
         public TwitterBotCommand()
         {
             credentials = new Credentials(configuration);
@@ -66,6 +71,9 @@ namespace Wikiled.Market.Console.Commands
 
         protected override Task Execute(CancellationToken token)
         {
+            factory = new LoggerFactory();
+            factory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+
             log.Info("Loading security...");
             if (IsService)
             {
@@ -90,7 +98,8 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("QuandlKey not found");
             }
 
-            twitterAnalysis = new TwitterAnalysis(new StreamApiClient(new HttpClient(), new Uri("http://192.168.0.200:7070/api/twiter/")));
+            var logger = factory.CreateLogger<StreamApiClient>();
+            twitterAnalysis = new TwitterAnalysis(new StreamApiClient(new HttpClient() { Timeout = TimeSpan.FromMinutes(2) }, new Uri("http://192.168.0.200:7070/api/twiter/"), logger));
             Process();
             return Task.CompletedTask;
         }
@@ -100,17 +109,26 @@ namespace Wikiled.Market.Console.Commands
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
             var timerCreator = new ObservableTimer(configuration);
             var stockItems = Stocks.Split(",");
-            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Subscribe(item => ProcessMarket(instance, stockItems));
-            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Subscribe(item => ProcessSentiment());
+            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
+            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Select(item => ProcessSentiment(stockItems)).Subscribe();
         }
 
-        private void ProcessSentiment(string[] stockItems)
+        private async Task ProcessSentiment(string[] stockItems)
         {
             log.Info("Processing market");
             StringBuilder text = new StringBuilder();
             foreach (var stock in stockItems)
             {
-                text.AppendLine($"{stock.Twitter} ({stock.TotalMessages}) with average sentiment - {stock.AverageSentiment()}(24H) {stock.AverageSentiment(1)}(1H)");
+                var sentiment = await twitterAnalysis.GetSentiment($"${stock}");
+                if (sentiment != null)
+                {
+                    text.AppendLine($"{stock} ({sentiment.TotalMessages}) with average sentiment:");
+                    ExtractResult(sentiment, text);
+                }
+                else
+                {
+                    log.Warn("Not found sentiment for {0}", stock);
+                }
             }
 
             PublishMessage(text.ToString());
@@ -123,12 +141,22 @@ namespace Wikiled.Market.Console.Commands
             {
                 log.Info("Processing {0}", stock);
                 StringBuilder text = new StringBuilder();
-                twitterAnalysis.GetSentiment()
+                var sentimentTask = twitterAnalysis.GetSentiment($"${stock}");
                 var result = await instance.Start(stock);
                 var sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
                 var buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;
                 text.AppendLine($"${stock} trading signals ({sellAccuracy * 100:F0}%/{buyAccuracy * 100:F0}%)");
-                text.AppendLine($"Total twitter messages {stock.TotalMessages} with average sentiment - {stock.AverageSentiment()}(24H) {stock.AverageSentiment(1)}(1H)");
+                var sentiment = await sentimentTask;
+                if (sentiment != null)
+                {
+                    text.AppendLine($"Total twitter messages {sentiment.TotalMessages} with average sentiment:");
+                    ExtractResult(sentiment, text);
+                }
+                else
+                {
+                    log.Warn("Not found sentiment for {0}", stock);
+                }
+
                 for (int i = 0; i < result.Predictions.Length || i < 2; i++)
                 {
                     var prediction = result.Predictions[result.Predictions.Length - i - 1];
@@ -137,6 +165,14 @@ namespace Wikiled.Market.Console.Commands
                 }
 
                 PublishMessage(text.ToString());
+            }
+        }
+
+        private static void ExtractResult(TrackingResults sentiment, StringBuilder text)
+        {
+            foreach (var keyValue in sentiment.Sentiment)
+            {
+                text.AppendLine($" [{keyValue.Key}]: {keyValue.Value.AverageSentiment}({keyValue.Value.TotalMessages} msg.)");
             }
         }
 
@@ -167,7 +203,7 @@ namespace Wikiled.Market.Console.Commands
             if (!File.Exists(Path.Combine(directory, "service.json")))
             {
                 throw new Exception("Configuration file service.json not found");
-                
+
             }
 
             return JsonConvert.DeserializeObject<MonitoringConfig>(File.ReadAllText(Path.Combine(directory, "service.json")));

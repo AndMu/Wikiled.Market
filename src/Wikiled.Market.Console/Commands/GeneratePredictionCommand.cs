@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Trady.Importer;
+using Wikiled.Common.Utilities.Config;
 using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 
@@ -13,14 +14,23 @@ namespace Wikiled.Market.Console.Commands
     {
         private static Logger log = LogManager.GetCurrentClassLogger();
 
+        private readonly ApplicationConfiguration configuration = new ApplicationConfiguration();
+
+        private readonly Credentials credentials;
+
         public override string Name => "Generate";
 
         [Description("For what stocks generate prediction")]
         public string Stocks { get; set; }
 
+        public GeneratePredictionCommand()
+        {
+            credentials = new Credentials(configuration);
+        }
+
         protected override Task Execute(CancellationToken token)
         {
-            var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Credentials.QuandlKey)), new ClassifierFactory());
+            var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
             var stocks = Stocks.Split(',');
             foreach (var stock in stocks)
             {

@@ -4,10 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Wikiled.Common.Net.Client;
-using Wikiled.Sentiment.Api.Request;
-using Wikiled.Sentiment.Text.Data.Review;
-using Wikiled.Sentiment.Text.Sentiment;
-using Wikiled.Text.Analysis.Structure;
+using Wikiled.Twitter.Monitor.Api.Response;
 
 namespace Wikiled.Market.Sentiment
 {
@@ -22,17 +19,12 @@ namespace Wikiled.Market.Sentiment
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public async Task<double?> GetSentiment(string text)
+        public async Task<TrackingResults> GetSentiment(string keyword)
         {
             log.Debug("GetSentiment");
-            throw new NotImplementedException();
-            //WorkRequest request = new WorkRequest();
-            //request.CleanText = true;
-            //request.Documents = new[] { new SingleProcessingData(text) };
-            //request.Domain = "TwitterMarket";
-            //var result = await client.PostRequest<WorkRequest, Document>("parsestream", request, CancellationToken.None).LastOrDefaultAsync();
-            //log.Debug("GetSentiment Calculated: {0}", result.Stars);
-            //return result.Stars.HasValue ? RatingCalculator.ConvertToRaw(result.Stars.Value) : result.Stars;
+            var result = await client.GetRequest<TrackingResults>($"sentiment/{keyword}", CancellationToken.None).LastOrDefaultAsync();
+            log.Debug("Result {0}", result);
+            return result;
         }
     }
 }
