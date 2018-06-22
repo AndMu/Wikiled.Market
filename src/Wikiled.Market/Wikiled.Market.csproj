@@ -18,7 +18,7 @@
     <PackageReference Include="Wikiled.Common.Utilities" Version="1.0.5" />
     <PackageReference Include="Wikiled.MachineLearning" Version="2.1.9" />
     <PackageReference Include="Wikiled.Twitter" Version="1.3.2" />
-    <PackageReference Include="Wikiled.Twitter.Monitor.Api" Version="1.0.3" />
+    <PackageReference Include="Wikiled.Twitter.Monitor.Api" Version="1.0.9" />
   </ItemGroup>
 
 </Project>

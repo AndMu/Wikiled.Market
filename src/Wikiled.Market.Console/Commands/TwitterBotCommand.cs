@@ -122,7 +122,7 @@ namespace Wikiled.Market.Console.Commands
                 var sentiment = await twitterAnalysis.GetSentiment($"${stock}");
                 if (sentiment != null)
                 {
-                    text.AppendLine($"{stock} ({sentiment.TotalMessages}) with average sentiment:");
+                    text.AppendLine($"{stock} ({sentiment.Total}) with average sentiment:");
                     ExtractResult(sentiment, text);
                 }
                 else
@@ -149,7 +149,7 @@ namespace Wikiled.Market.Console.Commands
                 var sentiment = await sentimentTask;
                 if (sentiment != null)
                 {
-                    text.AppendLine($"Total twitter messages {sentiment.TotalMessages} with average sentiment:");
+                    text.AppendLine($"Total twitter messages {sentiment.Total} with average sentiment:");
                     ExtractResult(sentiment, text);
                 }
                 else

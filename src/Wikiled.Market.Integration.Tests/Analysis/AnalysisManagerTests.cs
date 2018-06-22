@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Trady.Importer;
+using Wikiled.Common.Utilities.Config;
 using Wikiled.Market.Analysis;
 
 namespace Wikiled.Market.Integration.Tests.Analysis
@@ -13,7 +14,7 @@ namespace Wikiled.Market.Integration.Tests.Analysis
         [SetUp]
         public void SetUp()
         {
-            instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(Credentials.QuandlKey)), new ClassifierFactory());
+            instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(new Credentials(new ApplicationConfiguration()).QuandlKey)), new ClassifierFactory());
         }
 
         [TearDown]

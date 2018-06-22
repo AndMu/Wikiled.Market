@@ -10,7 +10,7 @@ using Wikiled.Market.Sentiment;
 namespace Wikiled.Market.Integration.Tests.Sentiment
 {
     [TestFixture]
-    public class SentimentAnalysisTests
+    public class TwitterAnalysisTests
     {
         private TwitterAnalysis instance;
 
@@ -23,14 +23,14 @@ namespace Wikiled.Market.Integration.Tests.Sentiment
         [Test]
         public async Task SimpleTest()
         {
-            var result = await instance.GetSentiment("Sell and short it");
-            Assert.AreEqual(-1, result);
+            var result = await instance.GetSentiment("$AMD");
+            Assert.GreaterOrEqual(result.Total, 0);
         }
 
         private TwitterAnalysis CreateSentimentAnalysis()
         {
             return new TwitterAnalysis(new StreamApiClient(new HttpClient(),
-                new Uri("http://sentiment.wikiled.com/api/sentiment/"),
+                new Uri("http://192.168.0.200:7020/api/twitter/"),
                 new Logger<StreamApiClient>(new NullLoggerFactory())));
         }
     }
