@@ -7,7 +7,7 @@ using Wikiled.Market.Sentiment;
 namespace Wikiled.Market.Tests.Sentiment
 {
     [TestFixture]
-    public class SentimentAnalysisTests
+    public class TwitterAnalysisTests
     {
         private Mock<IStreamApiClient> mockStreamApiClient;
 

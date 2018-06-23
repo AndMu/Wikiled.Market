@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
@@ -39,7 +38,7 @@ namespace Wikiled.Market.Console.Commands
 
         private readonly Credentials credentials;
 
-        private TwitterAnalysis twitterAnalysis;
+        private ITwitterAnalysis twitterAnalysis;
 
         private ITwitterCredentials cred;
 
@@ -98,7 +97,7 @@ namespace Wikiled.Market.Console.Commands
             }
 
             var logger = factory.CreateLogger<StreamApiClient>();
-            twitterAnalysis = new TwitterAnalysis(new StreamApiClient(new HttpClient() { Timeout = TimeSpan.FromMinutes(2) }, new Uri("http://192.168.0.200:7070/api/twiter/"), logger));
+            twitterAnalysis = new TwitterAnalysisFactory(logger).Create();
             Process();
             return Task.CompletedTask;
         }
@@ -114,7 +113,7 @@ namespace Wikiled.Market.Console.Commands
 
         private async Task ProcessSentiment(string[] stockItems)
         {
-            log.Info("Processing market");
+            log.Info("Retrieving sentiment...");
             StringBuilder text = new StringBuilder();
             foreach (var stock in stockItems)
             {

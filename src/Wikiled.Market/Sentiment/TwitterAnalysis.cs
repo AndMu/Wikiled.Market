@@ -21,7 +21,7 @@ namespace Wikiled.Market.Sentiment
 
         public async Task<TrackingResults> GetSentiment(string keyword)
         {
-            log.Debug("GetSentiment");
+            log.Debug("GetSentiment: {0}", keyword);
             var result = await client.GetRequest<TrackingResults>($"sentiment/{keyword}", CancellationToken.None).LastOrDefaultAsync();
             log.Debug("Result {0}", result);
             return result;
