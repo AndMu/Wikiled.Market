@@ -107,21 +107,24 @@ namespace Wikiled.Market.Console.Commands
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
             var timerCreator = new ObservableTimer(configuration);
             var stockItems = Stocks.Split(",");
-            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
-            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Select(item => ProcessSentiment(stockItems)).Subscribe();
+            timer = timerCreator.Daily(TimeSpan.FromHours(6)).StartWith(0).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
+            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).StartWith(0).Select(item => ProcessSentiment(stockItems)).Subscribe();
         }
 
         private async Task ProcessSentiment(string[] stockItems)
         {
             log.Info("Retrieving sentiment...");
             StringBuilder text = new StringBuilder();
+            text.AppendLine("Last 6h average sentiment (from messages):");
             foreach (var stock in stockItems)
             {
                 var sentiment = await twitterAnalysis.GetSentiment($"${stock}");
                 if (sentiment != null)
                 {
-                    text.AppendLine($"{stock} ({sentiment.Total}) with average sentiment:");
-                    ExtractResult(sentiment, text);
+                    if (sentiment.Sentiment.ContainsKey("6H"))
+                    {
+                        text.AppendFormat("${2} - {0:F2}({1})", sentiment.Sentiment["6H"].AverageSentiment, sentiment.Sentiment["6H"].TotalMessages, stock);
+                    }
                 }
                 else
                 {
@@ -147,7 +150,7 @@ namespace Wikiled.Market.Console.Commands
                 var sentiment = await sentimentTask;
                 if (sentiment != null)
                 {
-                    text.AppendFormat("Average sentiment: {0}({1})\r\n", sentiment.Sentiment["24H"].AverageSentiment, sentiment.Sentiment["24H"].TotalMessages);
+                    text.AppendFormat("Average sentiment: {0:F2}({1})\r\n", sentiment.Sentiment["24H"].AverageSentiment, sentiment.Sentiment["24H"].TotalMessages);
                 }
                 else
                 {
@@ -165,16 +168,10 @@ namespace Wikiled.Market.Console.Commands
             }
         }
 
-        private static void ExtractResult(TrackingResults sentiment, StringBuilder text)
-        {
-            foreach (var keyValue in sentiment.Sentiment)
-            {
-                text.AppendLine($" [{keyValue.Key}]: {keyValue.Value.AverageSentiment}({keyValue.Value.TotalMessages} msg.)");
-            }
-        }
 
         private void PublishMessage(string text)
         {
+            log.Info("Publishing message");
             Auth.ExecuteOperationWithCredentials(
                 cred,
                 () =>
