@@ -107,15 +107,15 @@ namespace Wikiled.Market.Console.Commands
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
             var timerCreator = new ObservableTimer(configuration);
             var stockItems = Stocks.Split(",");
-            timer = timerCreator.Daily(TimeSpan.FromHours(6)).StartWith(0).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
-            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).StartWith(0).Select(item => ProcessSentiment(stockItems)).Subscribe();
+            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
+            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Select(item => ProcessSentiment(stockItems)).Subscribe();
         }
 
         private async Task ProcessSentiment(string[] stockItems)
         {
             log.Info("Retrieving sentiment...");
             StringBuilder text = new StringBuilder();
-            text.AppendLine("Last 6h average sentiment (from messages):");
+            text.AppendLine("Last 6H average sentiment (from messages):");
             foreach (var stock in stockItems)
             {
                 var sentiment = await twitterAnalysis.GetSentiment($"${stock}");
@@ -123,7 +123,7 @@ namespace Wikiled.Market.Console.Commands
                 {
                     if (sentiment.Sentiment.ContainsKey("6H"))
                     {
-                        text.AppendFormat("${2} - {0:F2}({1})", sentiment.Sentiment["6H"].AverageSentiment, sentiment.Sentiment["6H"].TotalMessages, stock);
+                        text.AppendFormat("${2}: {0:F2}({1}) ", sentiment.Sentiment["6H"].AverageSentiment, sentiment.Sentiment["6H"].TotalMessages, stock);
                     }
                 }
                 else
