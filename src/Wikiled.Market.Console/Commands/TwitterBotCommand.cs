@@ -21,6 +21,7 @@ using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
 using Wikiled.Market.Sentiment;
+using Wikiled.Text.Analysis.Twitter;
 using Wikiled.Twitter.Monitor.Api.Response;
 using Wikiled.Twitter.Security;
 using Credentials = Wikiled.Market.Analysis.Credentials;
@@ -123,7 +124,8 @@ namespace Wikiled.Market.Console.Commands
                 {
                     if (sentiment.Sentiment.ContainsKey("6H"))
                     {
-                        text.AppendFormat("${2}: {0:F2}({1}) ", sentiment.Sentiment["6H"].AverageSentiment, sentiment.Sentiment["6H"].TotalMessages, stock);
+                        var value = sentiment.Sentiment["6H"];
+                        text.AppendFormat("${2}: {3}{0:F2}({1}) ", value.AverageSentiment, value.TotalMessages, stock, GetEmoji(value));
                     }
                 }
                 else
@@ -133,6 +135,16 @@ namespace Wikiled.Market.Console.Commands
             }
 
             PublishMessage(text.ToString());
+        }
+
+        private string GetEmoji(SentimentResult result)
+        {
+            if (result.AverageSentiment < 0)
+            {
+                return Emoji.CHART_WITH_DOWNWARDS_TREND.Unicode;
+            }
+
+            return result.AverageSentiment > 0 ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : string.Empty;
         }
 
         private async Task ProcessMarket(AnalysisManager instance, string[] stockItems)
@@ -161,13 +173,13 @@ namespace Wikiled.Market.Console.Commands
                 {
                     var prediction = result.Predictions[result.Predictions.Length - i - 1];
                     log.Info("{2}, Predicted T-{0}: {1}\r\n", i, prediction, stock);
-                    text.AppendFormat("T-{0}: {1}\r\n", i, prediction);
+                    var icon = prediction == MarketDirection.Buy ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : Emoji.CHART_WITH_DOWNWARDS_TREND.Unicode;
+                    text.AppendFormat("T-{0}: {2}{1}\r\n", i, prediction, icon);
                 }
 
                 PublishMessage(text.ToString());
             }
         }
-
 
         private void PublishMessage(string text)
         {
