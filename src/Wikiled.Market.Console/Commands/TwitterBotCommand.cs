@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
+using Polly;
 using Trady.Importer;
 using Tweetinvi;
 using Tweetinvi.Models;
@@ -97,8 +98,7 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("QuandlKey not found");
             }
 
-            var logger = factory.CreateLogger<StreamApiClient>();
-            twitterAnalysis = new TwitterAnalysisFactory(logger).Create();
+            twitterAnalysis = new TwitterAnalysisFactory(factory).Create();
             Process();
             return Task.CompletedTask;
         }
@@ -117,9 +117,11 @@ namespace Wikiled.Market.Console.Commands
             log.Info("Retrieving sentiment...");
             StringBuilder text = new StringBuilder();
             text.AppendLine("Last 6H average sentiment (from messages):");
+            var policy = Policy.HandleResult<TrackingResults>(r => r == null);
+
             foreach (var stock in stockItems)
             {
-                var sentiment = await twitterAnalysis.GetSentiment($"${stock}");
+                var sentiment = await policy.RetryAsync(3).ExecuteAsync(async ct => await twitterAnalysis.GetSentiment($"${stock}"), CancellationToken.None);
                 if (sentiment != null)
                 {
                     if (sentiment.Sentiment.ContainsKey("6H"))

@@ -7,9 +7,9 @@ namespace Wikiled.Market.Sentiment
 {
     public class TwitterAnalysisFactory : ITwitterAnalysisFactory
     {
-        private readonly ILogger<StreamApiClient> logger;
+        private readonly ILoggerFactory logger;
 
-        public TwitterAnalysisFactory(ILogger<StreamApiClient> logger)
+        public TwitterAnalysisFactory(ILoggerFactory logger)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -17,10 +17,8 @@ namespace Wikiled.Market.Sentiment
         public ITwitterAnalysis Create()
         {
             return new TwitterAnalysis(
-                new StreamApiClient(
-                    new HttpClient(), 
-                    new Uri("http://192.168.0.200:7020/api/twitter/"),
-                logger));
+                new ApiClientFactory(new HttpClient(), new Uri("http://192.168.0.200:7020/api/twitter/")).GetClient(), 
+                logger.CreateLogger<TwitterAnalysis>());
         }
     }
 }

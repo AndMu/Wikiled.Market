@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Wikiled.Common.Net.Client;
 using Wikiled.Market.Sentiment;
 
 namespace Wikiled.Market.Integration.Tests.Sentiment
@@ -27,7 +25,7 @@ namespace Wikiled.Market.Integration.Tests.Sentiment
 
         private ITwitterAnalysis CreateSentimentAnalysis()
         {
-            return new TwitterAnalysisFactory(new Logger<StreamApiClient>(new NullLoggerFactory())).Create();
+            return new TwitterAnalysisFactory(new NullLoggerFactory()).Create();
         }
     }
 }

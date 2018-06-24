@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Wikiled.Common.Net.Client;
 using Wikiled.Twitter.Monitor.Api.Response;
 
@@ -10,21 +9,37 @@ namespace Wikiled.Market.Sentiment
 {
     public class TwitterAnalysis : ITwitterAnalysis
     {
-        private static readonly Logger log = LogManager.GetCurrentClassLogger();
+        private readonly ILogger<TwitterAnalysis> logger;
 
-        private readonly IStreamApiClient client;
+        private readonly IApiClient client;
 
-        public TwitterAnalysis(IStreamApiClient client)
+        public TwitterAnalysis(IApiClient client, ILogger<TwitterAnalysis> logger)
         {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<TrackingResults> GetSentiment(string keyword)
         {
-            log.Debug("GetSentiment: {0}", keyword);
-            var result = await client.GetRequest<TrackingResults>($"sentiment/{keyword}", CancellationToken.None).LastOrDefaultAsync();
-            log.Debug("Result {0}", result);
-            return result;
+            try
+            {
+                logger.LogDebug("GetSentiment: {0}", keyword);
+                var result = await client.GetRequest<RawResponse<TrackingResults>>($"sentiment/{keyword}", CancellationToken.None);
+                logger.LogDebug("Result {0}", result);
+                if (!result.IsSuccess)
+                {
+                    logger.LogError("Request failed with: {0}", result.HttpResponseMessage);
+                    return null;
+                }
+
+                return result.Result.Value;
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "Failed to retrieve sentiment");
+            }
+
+            return null;
         }
     }
 }
