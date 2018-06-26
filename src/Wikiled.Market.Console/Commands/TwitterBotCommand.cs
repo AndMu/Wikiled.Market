@@ -164,7 +164,13 @@ namespace Wikiled.Market.Console.Commands
                 var sentiment = await sentimentTask;
                 if (sentiment != null)
                 {
-                    text.AppendFormat("Average sentiment: {0:F2}({1})\r\n", sentiment.Sentiment["24H"].AverageSentiment, sentiment.Sentiment["24H"].TotalMessages);
+                    if (sentiment.Sentiment.TryGetValue("24H", out var sentimentValue))
+                    {
+                        text.AppendFormat("Average sentiment: {2}{0:F2}({1})\r\n",
+                            sentimentValue.AverageSentiment,
+                            sentimentValue.TotalMessages,
+                            GetEmoji(sentimentValue));
+                    }
                 }
                 else
                 {
