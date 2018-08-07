@@ -2,6 +2,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Net.Client;
+using Wikiled.Market.Analysis;
 
 namespace Wikiled.Market.Sentiment
 {
@@ -9,15 +10,18 @@ namespace Wikiled.Market.Sentiment
     {
         private readonly ILoggerFactory logger;
 
-        public TwitterAnalysisFactory(ILoggerFactory logger)
+        private readonly SentimentConfig config;
+
+        public TwitterAnalysisFactory(ILoggerFactory logger, SentimentConfig config)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public ITwitterAnalysis Create()
         {
             return new TwitterAnalysis(
-                new ApiClientFactory(new HttpClient(), new Uri("http://192.168.0.200:7020/api/twitter/")).GetClient(), 
+                new ApiClientFactory(new HttpClient(), new Uri($"http://{config.Service}/api/twitter/")).GetClient(), 
                 logger.CreateLogger<TwitterAnalysis>());
         }
     }

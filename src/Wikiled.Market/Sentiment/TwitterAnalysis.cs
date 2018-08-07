@@ -24,7 +24,7 @@ namespace Wikiled.Market.Sentiment
             try
             {
                 logger.LogDebug("GetSentiment: {0}", keyword);
-                var result = await client.GetRequest<RawResponse<TrackingResults>>($"sentiment/{keyword}", CancellationToken.None);
+                var result = await client.GetRequest<RawResponse<TrackingResults>>($"sentiment/{keyword}", CancellationToken.None).ConfigureAwait(false);
                 logger.LogDebug("Result {0}", result);
                 if (!result.IsSuccess)
                 {
