@@ -21,7 +21,7 @@
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="Accord.Math" Version="3.8.0" />
-    <PackageReference Include="Trady.Analysis" Version="3.1.1" />
+    <PackageReference Include="Trady.Analysis" Version="3.0.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.0.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.2.1" />
   </ItemGroup>
