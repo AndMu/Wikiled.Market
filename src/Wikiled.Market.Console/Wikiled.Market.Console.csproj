@@ -9,21 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.1.0" />
-    <PackageReference Include="NLog" Version="4.5.6" />
-    <PackageReference Include="Polly" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.1.1" />
+    <PackageReference Include="NLog" Version="4.5.8" />
+    <PackageReference Include="Polly" Version="6.1.0" />
     <PackageReference Include="System.Console" Version="4.3.1" />
     <PackageReference Include="System.Reactive.Linq" Version="4.0.0" />
-    <PackageReference Include="Wikiled.Common" Version="1.0.11" />
-    <PackageReference Include="Wikiled.Common.Utilities" Version="1.0.5" />
-    <PackageReference Include="Wikiled.Console" Version="1.1.1" />
-    <PackageReference Include="Wikiled.Twitter" Version="1.3.2" />
+    <PackageReference Include="Wikiled.Common" Version="1.1.1" />
+    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.1" />
+    <PackageReference Include="Wikiled.Console" Version="1.2.0" />
+    <PackageReference Include="Wikiled.Twitter" Version="1.4.0" />
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="Accord.Math" Version="3.8.0" />
-    <PackageReference Include="Trady.Analysis" Version="3.0.0" />
+    <PackageReference Include="Trady.Analysis" Version="3.1.1" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.0.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.1.0" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>

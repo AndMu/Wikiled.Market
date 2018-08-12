@@ -9,7 +9,6 @@ using Accord.Math.Optimization.Losses;
 using Accord.Statistics.Analysis;
 using Accord.Statistics.Kernels;
 using NLog;
-using Wikiled.Common.Arguments;
 using Wikiled.MachineLearning.Mathematics;
 using Wikiled.MachineLearning.Normalization;
 
@@ -27,7 +26,11 @@ namespace Wikiled.Market.Analysis
 
         public void Train(DataPackage data, CancellationToken token)
         {
-            Guard.NotNull(() => data, data);
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             log.Debug("Training with {0} records", data.Y.Length);
 
             standardizer = Standardizer.GetNumericStandardizer(data.X);
@@ -102,8 +105,12 @@ namespace Wikiled.Market.Analysis
 
         public int[] Classify(double[][] x)
         {
+            if (x is null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
             log.Debug("Classify");
-            Guard.NotNull(() => x, x);
             x = standardizer.StandardizeAll(x);
             return ClassifyInternal(x);
         }

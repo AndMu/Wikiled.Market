@@ -1,4 +1,4 @@
-﻿using Wikiled.Common.Arguments;
+﻿using System;
 
 namespace Wikiled.Market.Analysis
 {
@@ -6,12 +6,9 @@ namespace Wikiled.Market.Analysis
     {
         public DataPackage(int[] y, double[][] x, double[][] prediction)
         {
-            Guard.NotNull(() => y, y);
-            Guard.NotNull(() => x, x);
-            Guard.NotNull(() => prediction, prediction);
-            Y = y;
-            X = x;
-            Prediction = prediction;
+            Y = y ?? throw new ArgumentNullException(nameof(y));
+            X = x ?? throw new ArgumentNullException(nameof(x));
+            Prediction = prediction ?? throw new ArgumentNullException(nameof(prediction));
         }
 
         public int[] Y { get; }

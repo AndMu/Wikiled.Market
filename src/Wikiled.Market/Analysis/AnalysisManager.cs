@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Wikiled.Common.Arguments;
 
 namespace Wikiled.Market.Analysis
 {
@@ -14,10 +13,8 @@ namespace Wikiled.Market.Analysis
 
         public AnalysisManager(IDataSource dataSource, IClassifierFactory classifierFactory)
         {
-            Guard.NotNull(() => dataSource, dataSource);
-            Guard.NotNull(() => classifierFactory, classifierFactory);
-            this.dataSource = dataSource;
-            this.classifierFactory = classifierFactory;
+            this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            this.classifierFactory = classifierFactory ?? throw new ArgumentNullException(nameof(classifierFactory));
         }
 
         public async Task<PredictionResult> Start(string stock)

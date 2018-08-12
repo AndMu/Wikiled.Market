@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,14 +16,15 @@ using Trady.Importer;
 using Tweetinvi;
 using Tweetinvi.Models;
 using Tweetinvi.Parameters;
+using Wikiled.Common.Net.Client;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.Common.Utilities.Rx;
 using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
-using Wikiled.Market.Sentiment;
 using Wikiled.Text.Analysis.Twitter;
 using Wikiled.Twitter.Monitor.Api.Response;
+using Wikiled.Twitter.Monitor.Api.Service;
 using Wikiled.Twitter.Security;
 using Credentials = Wikiled.Market.Analysis.Credentials;
 
@@ -43,9 +45,9 @@ namespace Wikiled.Market.Console.Commands
 
         private ITwitterCredentials cred;
 
-        private IDisposable timer = default;
+        private IDisposable timer;
 
-        private IDisposable twitterTimer = null;
+        private IDisposable twitterTimer;
 
         private ILoggerFactory factory;
 
@@ -97,7 +99,7 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("QuandlKey not found");
             }
 
-            twitterAnalysis = new TwitterAnalysisFactory(factory, config.Sentiment).Create();
+            twitterAnalysis = new TwitterAnalysis(new ApiClientFactory(new HttpClient {Timeout = TimeSpan.FromMinutes(5)}, new Uri(config.Sentiment.Service)));
             Process();
             return Task.CompletedTask;
         }
@@ -105,7 +107,7 @@ namespace Wikiled.Market.Console.Commands
         private void Process()
         {
             var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
-            var timerCreator = new ObservableTimer(configuration);
+            var timerCreator = new ObservableTimer(configuration, new NLogLoggerFactory());
             var stockItems = Stocks.Split(",");
             timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
             twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Select(item => ProcessSentiment(stockItems)).Subscribe();
@@ -121,8 +123,7 @@ namespace Wikiled.Market.Console.Commands
             foreach (var stock in stockItems)
             {
                 var sentiment = await policy.RetryAsync(3)
-                    .ExecuteAsync(async ct => await twitterAnalysis.GetSentiment($"${stock}").ConfigureAwait(false),
-                                  CancellationToken.None)
+                    .ExecuteAsync(ct => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None), CancellationToken.None)
                     .ConfigureAwait(false);
                 if (sentiment != null)
                 {
@@ -158,7 +159,7 @@ namespace Wikiled.Market.Console.Commands
             {
                 log.Info("Processing {0}", stock);
                 StringBuilder text = new StringBuilder();
-                var sentimentTask = twitterAnalysis.GetSentiment($"${stock}");
+                var sentimentTask = twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None);
                 var result = await instance.Start(stock).ConfigureAwait(false);
                 var sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
                 var buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;

@@ -1,5 +1,5 @@
-﻿using Accord.Statistics.Analysis;
-using Wikiled.Common.Arguments;
+﻿using System;
+using Accord.Statistics.Analysis;
 
 namespace Wikiled.Market.Analysis
 {
@@ -7,10 +7,8 @@ namespace Wikiled.Market.Analysis
     {
         public PredictionResult(MarketDirection[] predictions, GeneralConfusionMatrix performance)
         {
-            Guard.NotNull(() => predictions, predictions);
-            Guard.NotNull(() => performance, performance);
-            Predictions = predictions;
-            Performance = performance;
+            Predictions = predictions ?? throw new ArgumentNullException(nameof(predictions));
+            Performance = performance ?? throw new ArgumentNullException(nameof(performance));
         }
 
         public GeneralConfusionMatrix Performance { get; }
