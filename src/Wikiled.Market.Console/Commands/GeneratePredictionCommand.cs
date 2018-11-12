@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
-using Trady.Importer;
+using Trady.Importer.Quandl;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;

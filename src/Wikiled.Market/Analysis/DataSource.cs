@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Trady.Analysis;
+using Trady.Analysis.Extension;
 using Trady.Core.Infrastructure;
 using Wikiled.Arff.Extensions;
 using Wikiled.Arff.Persistence;
@@ -93,8 +94,8 @@ namespace Wikiled.Market.Analysis
         private async Task LoadData(string stock, DateTime? from, DateTime? to)
         {
             var data = await importer.ImportAsync(stock, from, to).ConfigureAwait(false);
-            momentumOne = data.CloseDiff(1);
-            momentumFive = data.CloseDiff(5);
+            momentumOne = data.Mtm(1);
+            momentumFive = data.Mtm(5);
             macd = data.Macd(12, 26, 9);
             bb = data.Bb(20, 2);
             atr = data.Atr(12);

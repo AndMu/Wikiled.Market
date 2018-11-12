@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Trady.Importer;
+using Trady.Importer.Quandl;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.Market.Analysis;
 

@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using NLog;
 using NLog.Extensions.Logging;
 using Polly;
-using Trady.Importer;
+using Trady.Importer.Quandl;
 using Tweetinvi;
 using Tweetinvi.Models;
 using Tweetinvi.Parameters;
