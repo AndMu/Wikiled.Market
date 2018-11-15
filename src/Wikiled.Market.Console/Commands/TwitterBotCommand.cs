@@ -20,10 +20,10 @@ using Wikiled.Common.Net.Client;
 using Wikiled.Common.Utilities.Config;
 using Wikiled.Common.Utilities.Rx;
 using Wikiled.Console.Arguments;
+using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
 using Wikiled.Text.Analysis.Twitter;
-using Wikiled.Twitter.Monitor.Api.Response;
 using Wikiled.Twitter.Monitor.Api.Service;
 using Wikiled.Twitter.Security;
 using Credentials = Wikiled.Market.Analysis.Credentials;
@@ -130,7 +130,7 @@ namespace Wikiled.Market.Console.Commands
                     if (sentiment.Sentiment.ContainsKey("6H"))
                     {
                         var value = sentiment.Sentiment["6H"];
-                        text.AppendFormat("${2}: {3}{0:F2}({1}) ", value.AverageSentiment, value.TotalMessages, stock, GetEmoji(value));
+                        text.AppendFormat("${2}: {3}{0:F2}({1}) ", value.Average, value.TotalMessages, stock, GetEmoji(value));
                     }
                 }
                 else
@@ -142,14 +142,14 @@ namespace Wikiled.Market.Console.Commands
             PublishMessage(text.ToString());
         }
 
-        private string GetEmoji(SentimentResult result)
+        private string GetEmoji(TrackingResult result)
         {
-            if (result.AverageSentiment < 0)
+            if (result.Average < 0)
             {
                 return Emoji.CHART_WITH_DOWNWARDS_TREND.Unicode;
             }
 
-            return result.AverageSentiment > 0 ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : string.Empty;
+            return result.Average > 0 ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : string.Empty;
         }
 
         private async Task ProcessMarket(AnalysisManager instance, string[] stockItems)
@@ -170,7 +170,7 @@ namespace Wikiled.Market.Console.Commands
                     if (sentiment.Sentiment.TryGetValue("24H", out var sentimentValue))
                     {
                         text.AppendFormat("Average sentiment: {2}{0:F2}({1})\r\n",
-                            sentimentValue.AverageSentiment,
+                            sentimentValue.Average,
                             sentimentValue.TotalMessages,
                             GetEmoji(sentimentValue));
                     }

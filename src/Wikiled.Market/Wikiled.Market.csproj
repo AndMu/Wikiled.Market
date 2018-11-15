@@ -8,7 +8,7 @@
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="Accord.Math" Version="3.8.0" />
-    <PackageReference Include="CsvHelper" Version="9.0.2" />
+    <PackageReference Include="CsvHelper" Version="9.1.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.2" />
     <PackageReference Include="Trady.Analysis" Version="3.2.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.2.0" />
@@ -16,9 +16,9 @@
     <PackageReference Include="Wikiled.Common" Version="1.1.1" />
     <PackageReference Include="Wikiled.Common.Net" Version="1.1.10" />
     <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.3" />
-    <PackageReference Include="Wikiled.MachineLearning" Version="2.3.4" />
+    <PackageReference Include="Wikiled.MachineLearning" Version="2.3.6" />
     <PackageReference Include="Wikiled.Twitter" Version="1.4.0" />
-    <PackageReference Include="Wikiled.Twitter.Monitor.Api" Version="1.0.46" />
+    <PackageReference Include="Wikiled.Twitter.Monitor.Api" Version="1.0.52" />
   </ItemGroup>
 
 </Project>
