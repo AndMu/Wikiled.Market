@@ -23,6 +23,8 @@ using Wikiled.Console.Arguments;
 using Wikiled.MachineLearning.Mathematics.Tracking;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
+using Wikiled.SeekingAlpha.Api.Request;
+using Wikiled.SeekingAlpha.Api.Service;
 using Wikiled.Text.Analysis.Twitter;
 using Wikiled.Twitter.Monitor.Api.Service;
 using Wikiled.Twitter.Security;
@@ -42,6 +44,8 @@ namespace Wikiled.Market.Console.Commands
         private readonly Credentials credentials;
 
         private ITwitterAnalysis twitterAnalysis;
+
+        private IAlphaAnalysis alpha;
 
         private ITwitterCredentials cred;
 
@@ -100,6 +104,7 @@ namespace Wikiled.Market.Console.Commands
             }
 
             twitterAnalysis = new TwitterAnalysis(new ApiClientFactory(new HttpClient {Timeout = TimeSpan.FromMinutes(5)}, new Uri(config.Sentiment.Service)));
+            alpha = new AlphaAnalysis(new ApiClientFactory(new HttpClient { Timeout = TimeSpan.FromMinutes(5) }, new Uri(config.Sentiment.Alpha)));
             Process();
             return Task.CompletedTask;
         }
@@ -110,27 +115,51 @@ namespace Wikiled.Market.Console.Commands
             var timerCreator = new ObservableTimer(configuration, new NLogLoggerFactory());
             var stockItems = Stocks.Split(",");
             timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
-            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).Select(item => ProcessSentiment(stockItems)).Subscribe();
+            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).StartWith(1).Select(item => ProcessSentimentAll(stockItems)).Subscribe();
         }
 
-        private async Task ProcessSentiment(string[] stockItems)
+        private async Task ProcessSentimentAll(string[] stockItems)
         {
-            log.Info("Retrieving sentiment...");
+            var twitterTask = ProcessSentiment(stockItems,
+                                               "Twitter",
+                                               stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
+            
+            var seekingAlpha = ProcessSentiment(stockItems,
+                                               "SeekingAlpha Editors",
+                                               stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article), CancellationToken.None));
+
+            var seekingAlphaComments = ProcessSentiment(stockItems,
+                                                "SeekingAlpha Comments",
+                                                stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
+
+            await Task.WhenAll(twitterTask, seekingAlphaComments, seekingAlpha).ConfigureAwait(false);
+        }
+
+        private async Task ProcessSentiment(string[] stockItems, string type, Func<string, Task<TrackingResults>> retrieve)
+        {
+            log.Info("Retrieving sentiment {0}...", type);
             StringBuilder text = new StringBuilder();
-            text.AppendLine("Last 6H average sentiment (from messages):");
+            text.AppendLine($"Average sentiment (from {type}):");
             var policy = Policy.HandleResult<TrackingResults>(r => r == null);
 
             foreach (var stock in stockItems)
             {
                 var sentiment = await policy.RetryAsync(3)
-                    .ExecuteAsync(ct => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None), CancellationToken.None)
+                    .ExecuteAsync(() => retrieve(stock))
                     .ConfigureAwait(false);
                 if (sentiment != null)
                 {
                     if (sentiment.Sentiment.ContainsKey("6H"))
                     {
                         var value = sentiment.Sentiment["6H"];
-                        text.AppendFormat("${2}: {3}{0:F2}({1}) ", value.Average, value.TotalMessages, stock, GetEmoji(value));
+                        if (value.TotalMessages > 0)
+                        {
+                            text.AppendFormat("${2}: {3}{0:F2}({1}) ",
+                                              value.Average,
+                                              value.TotalMessages,
+                                              stock,
+                                              GetEmoji(value));
+                        }
                     }
                 }
                 else
