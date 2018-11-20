@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using NLog;
+using NLog.Extensions.Logging;
+using Polly;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
@@ -7,11 +12,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using NLog;
-using NLog.Extensions.Logging;
-using Polly;
 using Trady.Importer.Quandl;
 using Tweetinvi;
 using Tweetinvi.Models;
@@ -80,7 +80,7 @@ namespace Wikiled.Market.Console.Commands
             factory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
 
             log.Info("Loading security...");
-            var config = LoadConfig();
+            ApplicationConfig config = LoadConfig();
             if (IsService)
             {
                 cred = new EnvironmentAuthentication(configuration).Authenticate();
@@ -88,7 +88,7 @@ namespace Wikiled.Market.Console.Commands
             else
             {
                 log.Info("Authenticating using user account");
-                var auth = new PersistedAuthentication(new PinConsoleAuthentication(new TwitterCredentials(config.Twitter.AccessToken, config.Twitter.AccessTokenSecret)));
+                PersistedAuthentication auth = new PersistedAuthentication(new PinConsoleAuthentication(new TwitterCredentials(config.Twitter.AccessToken, config.Twitter.AccessTokenSecret)));
                 cred = auth.Authenticate();
             }
 
@@ -103,7 +103,7 @@ namespace Wikiled.Market.Console.Commands
                 throw new ArgumentNullException("QuandlKey not found");
             }
 
-            twitterAnalysis = new TwitterAnalysis(new ApiClientFactory(new HttpClient {Timeout = TimeSpan.FromMinutes(5)}, new Uri(config.Sentiment.Service)));
+            twitterAnalysis = new TwitterAnalysis(new ApiClientFactory(new HttpClient { Timeout = TimeSpan.FromMinutes(5) }, new Uri(config.Sentiment.Service)));
             alpha = new AlphaAnalysis(new ApiClientFactory(new HttpClient { Timeout = TimeSpan.FromMinutes(5) }, new Uri(config.Sentiment.Alpha)));
             Process();
             return Task.CompletedTask;
@@ -111,47 +111,50 @@ namespace Wikiled.Market.Console.Commands
 
         private void Process()
         {
-            var instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
-            var timerCreator = new ObservableTimer(configuration, new NLogLoggerFactory());
-            var stockItems = Stocks.Split(",");
+            AnalysisManager instance = new AnalysisManager(new DataSource(new QuandlWikiImporter(credentials.QuandlKey)), new ClassifierFactory());
+            ObservableTimer timerCreator = new ObservableTimer(configuration, new NLogLoggerFactory());
+            string[] stockItems = Stocks.Split(",");
             timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => ProcessMarket(instance, stockItems)).Subscribe();
             twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).StartWith(1).Select(item => ProcessSentimentAll(stockItems)).Subscribe();
         }
 
         private async Task ProcessSentimentAll(string[] stockItems)
         {
-            var twitterTask = ProcessSentiment(stockItems,
+            Task twitterTask = ProcessSentiment(stockItems,
                                                "Twitter",
+                                               6,
                                                stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
-            
-            var seekingAlpha = ProcessSentiment(stockItems,
+
+            Task seekingAlpha = ProcessSentiment(stockItems,
                                                "SeekingAlpha Editors",
+                                                24,
                                                stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article), CancellationToken.None));
 
-            var seekingAlphaComments = ProcessSentiment(stockItems,
-                                                "SeekingAlpha Comments",
-                                                stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
+            Task seekingAlphaComments = ProcessSentiment(stockItems,
+                                                         "SeekingAlpha Comments",
+                                                         24,
+                                                         stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
 
             await Task.WhenAll(twitterTask, seekingAlphaComments, seekingAlpha).ConfigureAwait(false);
         }
 
-        private async Task ProcessSentiment(string[] stockItems, string type, Func<string, Task<TrackingResults>> retrieve)
+        private async Task ProcessSentiment(string[] stockItems, string type, int hours, Func<string, Task<TrackingResults>> retrieve)
         {
             log.Info("Retrieving sentiment {0}...", type);
             StringBuilder text = new StringBuilder();
             text.AppendLine($"Average sentiment (from {type}):");
-            var policy = Policy.HandleResult<TrackingResults>(r => r == null);
+            PolicyBuilder<TrackingResults> policy = Policy.HandleResult<TrackingResults>(r => r == null);
 
-            foreach (var stock in stockItems)
+            foreach (string stock in stockItems)
             {
-                var sentiment = await policy.RetryAsync(3)
+                TrackingResults sentiment = await policy.RetryAsync(3)
                     .ExecuteAsync(() => retrieve(stock))
                     .ConfigureAwait(false);
                 if (sentiment != null)
                 {
-                    if (sentiment.Sentiment.ContainsKey("6H"))
+                    if (sentiment.Sentiment.ContainsKey($"{hours}H"))
                     {
-                        var value = sentiment.Sentiment["6H"];
+                        TrackingResult value = sentiment.Sentiment[$"{hours}H"];
                         if (value.TotalMessages > 0)
                         {
                             text.AppendFormat("${2}: {3}{0:F2}({1}) ",
@@ -184,19 +187,19 @@ namespace Wikiled.Market.Console.Commands
         private async Task ProcessMarket(AnalysisManager instance, string[] stockItems)
         {
             log.Info("Processing market");
-            foreach (var stock in stockItems)
+            foreach (string stock in stockItems)
             {
                 log.Info("Processing {0}", stock);
                 StringBuilder text = new StringBuilder();
-                var sentimentTask = twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None);
-                var result = await instance.Start(stock).ConfigureAwait(false);
-                var sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
-                var buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;
+                Task<TrackingResults> sentimentTask = twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None);
+                PredictionResult result = await instance.Start(stock).ConfigureAwait(false);
+                double sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
+                double buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;
                 text.AppendLine($"${stock} trading signals ({sellAccuracy * 100:F0}%/{buyAccuracy * 100:F0}%)");
-                var sentiment = await sentimentTask.ConfigureAwait(false);
+                TrackingResults sentiment = await sentimentTask.ConfigureAwait(false);
                 if (sentiment != null)
                 {
-                    if (sentiment.Sentiment.TryGetValue("24H", out var sentimentValue))
+                    if (sentiment.Sentiment.TryGetValue("24H", out TrackingResult sentimentValue))
                     {
                         text.AppendFormat("Average sentiment: {2}{0:F2}({1})\r\n",
                             sentimentValue.Average,
@@ -211,9 +214,9 @@ namespace Wikiled.Market.Console.Commands
 
                 for (int i = 0; i < result.Predictions.Length || i < 2; i++)
                 {
-                    var prediction = result.Predictions[result.Predictions.Length - i - 1];
+                    MarketDirection prediction = result.Predictions[result.Predictions.Length - i - 1];
                     log.Info("{2}, Predicted T-{0}: {1}\r\n", i, prediction, stock);
-                    var icon = prediction == MarketDirection.Buy ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : Emoji.CHART_WITH_DOWNWARDS_TREND.Unicode;
+                    string icon = prediction == MarketDirection.Buy ? Emoji.CHART_WITH_UPWARDS_TREND.Unicode : Emoji.CHART_WITH_DOWNWARDS_TREND.Unicode;
                     text.AppendFormat("T-{0}: {2}{1}\r\n", i, prediction, icon);
                 }
 
@@ -228,13 +231,13 @@ namespace Wikiled.Market.Console.Commands
                 cred,
                 () =>
                     {
-                        var message = Tweet.PublishTweet(text, new PublishTweetOptionalParameters());
+                        ITweet message = Tweet.PublishTweet(text, new PublishTweetOptionalParameters());
                         if (message == null)
                         {
-                            var exception = ExceptionHandler.GetLastException();
+                            Tweetinvi.Core.Exceptions.ITwitterException exception = ExceptionHandler.GetLastException();
                             if (exception != null)
                             {
-                                foreach (var exceptionTwitterExceptionInfo in exception.TwitterExceptionInfos)
+                                foreach (Tweetinvi.Core.Exceptions.ITwitterExceptionInfo exceptionTwitterExceptionInfo in exception.TwitterExceptionInfos)
                                 {
                                     log.Error(exceptionTwitterExceptionInfo.Message);
                                 }
@@ -245,7 +248,7 @@ namespace Wikiled.Market.Console.Commands
 
         private ApplicationConfig LoadConfig()
         {
-            var directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (!File.Exists(Path.Combine(directory, "service.json")))
             {
                 throw new Exception("Configuration file service.json not found");
