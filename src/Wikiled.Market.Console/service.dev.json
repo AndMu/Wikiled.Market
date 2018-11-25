@@ -4,7 +4,7 @@
     "AccessTokenSecret": "Set"
   },
   "Sentiment": {
-    "Service": "_twitter.sentiment.url_",
-    "Alpha": "_seeking.sentiment.url_"
+    "Service": "http://192.168.0.70:7020",
+    "Alpha": "http://192.168.0.70:7026"
   }
 }
