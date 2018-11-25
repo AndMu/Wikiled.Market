@@ -10,8 +10,8 @@ Monitors a set of tickers: AMD, GOOG, FB, MMM, CAT, AMZN, INTC, PM, MS, JPM, MU,
 
 Collects sentiment from:
 
-- From Twitter
-- From Seeking alpha articles and comments (experimental and in progress)
+- Twitter
+- Seeking alpha articles and comments (experimental and in progress)
 
 ### **Machnine learning** Technical analysis of stock using 15 technical indicators and sentiment signals.
 
