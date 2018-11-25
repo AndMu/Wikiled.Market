@@ -13,9 +13,9 @@ Collects sentiment from:
 - From Twitter
 - From Seeking alpha articles and comments (experimental and in progress)
 
-### Technical analysis of stock using 15 technical indicators and sentiment signals.
+### **Machnine learning** Technical analysis of stock using 15 technical indicators and sentiment signals.
 
-Based on **machine learning** SVM (with the RBF kernel) classifier baseline.
+Based on machine learning SVM (with the RBF kernel) classifier baseline.
 
 In order to construct a decent baseline model, we made use of ten common technical indicators which led to a total of fifteen features as follows.
 
