@@ -10,5 +10,5 @@ FROM microsoft/dotnet:2.1.6-aspnetcore-runtime
 WORKDIR /app
 COPY --from=builder /app .
 
-ENTRYPOINT ["dotnet", "Wikiled.Market.Console.dll", "bot", "-Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,INTC,PM,MS,JPM,MU,TSLA", "-IsService"]
+ENTRYPOINT ["dotnet", "Wikiled.Market.Console.dll", "bot", "-IsService"]
 

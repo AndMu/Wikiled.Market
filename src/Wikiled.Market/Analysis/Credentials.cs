@@ -1,14 +1,17 @@
-﻿using Wikiled.Common.Utilities.Config;
+﻿using System;
+using Wikiled.Common.Utilities.Config;
 
 namespace Wikiled.Market.Analysis
 {
     public class Credentials
     {
-        private IApplicationConfiguration configuration;
-
         public Credentials(IApplicationConfiguration configuration)
         {
-            this.configuration = configuration ?? throw new System.ArgumentNullException(nameof(configuration));
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             QuandlKey = configuration.GetEnvironmentVariable("QUANDL_KEY");
         }
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Wikiled.Market.Analysis
 {
-    public class AnalysisManager
+    public class AnalysisManager : IAnalysisManager
     {
         private readonly IDataSource dataSource;
 

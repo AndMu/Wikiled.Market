@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NLog.Extensions.Logging;
 using Wikiled.Console.Arguments;
-using Wikiled.Market.Console.Logic;
+using Wikiled.Market.Console.Commands;
+using Wikiled.Market.Console.Commands.Config;
 
 namespace Wikiled.Market.Console
 {
@@ -10,11 +12,16 @@ namespace Wikiled.Market.Console
     {
         public static async Task Main(string[] args)
         {
+            NLog.LogManager.LoadConfiguration("nlog.config");
+            var starter = new AutoStarter("Market Utility", args);
+            starter.Factory.AddNLog();
+            starter.RegisterCommand<TwitterBotCommand, TwitterBotConfig>("bot");
+            starter.RegisterCommand<GeneratePredictionCommand, GeneratePredictionConfig>("Generate");
+
             var hostBuilder = new HostBuilder()
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<IAutoStarter>(serviceProvider => new AutoStarter("Market Utility", args));
-                        services.AddScoped<IHostedService, HostedService>();
+                    services.AddSingleton<IHostedService>(serviceProvider => starter);
                 });
 
             await hostBuilder.RunConsoleAsync();

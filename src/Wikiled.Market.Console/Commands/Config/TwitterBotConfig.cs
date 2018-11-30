@@ -1,0 +1,77 @@
+﻿using Autofac;
+using Newtonsoft.Json;
+using System;
+using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using Wikiled.Common.Net.Client;
+using Wikiled.Common.Utilities.Modules;
+using Wikiled.Console.Arguments;
+using Wikiled.Market.Analysis;
+using Wikiled.Market.Console.Config;
+using Wikiled.Market.Console.Logic;
+using Wikiled.Market.Modules;
+using Wikiled.SeekingAlpha.Api.Service;
+using Wikiled.Twitter.Modules;
+using Wikiled.Twitter.Monitor.Api.Service;
+using Wikiled.Twitter.Security;
+
+namespace Wikiled.Market.Console.Commands.Config
+{
+    public class TwitterBotConfig : ICommandConfig
+    {
+        [Description("For which stocks generate prediction")]
+        public string Stocks { get; set; }
+
+        public bool IsService { get; set; }
+
+        public ApplicationConfig ApplicationConfig { get; private set; }
+
+        public void Build(ContainerBuilder builder)
+        {
+            ApplicationConfig = LoadConfig();
+            builder.RegisterModule(new CommonModule());
+            builder.RegisterModule<AnalysisModule>();
+            builder.RegisterType<Credentials>();
+
+            builder.RegisterType<ConfigurationValidator>().AsSelf().AutoActivate();
+
+            builder.RegisterType<SentimentMonitor>().As<ISentimentMonitor>();
+            builder.RegisterType<MarketMonitor>().As<IMarketMonitor>();
+
+            if (IsService)
+            {
+                builder.RegisterType<EnvironmentAuthentication>().As<IAuthentication>();
+            }
+            else
+            {
+                builder.RegisterModule(new ConsoleAuthModule());
+            }
+
+            builder.Register(ctx => new TwitterAnalysis(ctx.ResolveNamed<IApiClientFactory>("Twitter"))).As<ITwitterAnalysis>();
+            builder.Register(ctx => new ApiClientFactory(
+                                 new HttpClient { Timeout = TimeSpan.FromMinutes(5) },
+                                 new Uri(ApplicationConfig.Sentiment.Service)))
+                .Named<IApiClientFactory>("Twitter");
+
+            builder.Register(ctx => new AlphaAnalysis(ctx.ResolveNamed<IApiClientFactory>("Seeking"))).As<IAlphaAnalysis>();
+            builder.Register(ctx => new ApiClientFactory(
+                                 new HttpClient { Timeout = TimeSpan.FromMinutes(5) },
+                                 new Uri(ApplicationConfig.Sentiment.Alpha)))
+                .Named<IApiClientFactory>("Seeking");
+        }
+
+        private ApplicationConfig LoadConfig()
+        {
+            string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (!File.Exists(Path.Combine(directory, "service.json")))
+            {
+                throw new Exception("Configuration file service.json not found");
+
+            }
+
+            return JsonConvert.DeserializeObject<ApplicationConfig>(File.ReadAllText(Path.Combine(directory, "service.json")));
+        }
+    }
+}
