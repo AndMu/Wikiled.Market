@@ -14,11 +14,11 @@
     <PackageReference Include="Trady.Analysis" Version="3.2.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.2.0" />
     <PackageReference Include="Wikiled.Arff" Version="2.2.7" />
-    <PackageReference Include="Wikiled.Common" Version="1.1.2" />
+    <PackageReference Include="Wikiled.Common" Version="1.1.4" />
     <PackageReference Include="Wikiled.Common.Net" Version="1.1.10" />
     <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.7" />
     <PackageReference Include="Wikiled.MachineLearning" Version="2.4.0" />
-    <PackageReference Include="Wikiled.SeekingAlpha.Api" Version="1.0.37" />
+    <PackageReference Include="Wikiled.SeekingAlpha.Api" Version="1.0.40" />
     <PackageReference Include="Wikiled.Twitter" Version="1.5.2" />
     <PackageReference Include="Wikiled.Twitter.Monitor.Api" Version="1.0.61" />
   </ItemGroup>

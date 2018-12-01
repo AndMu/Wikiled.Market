@@ -1,11 +1,7 @@
 ﻿{
-  "Twitter": {
-    "AccessToken": "Set",
-    "AccessTokenSecret": "Set"
-  },
   "Sentiment": {
     "Service": "_twitter.sentiment.url_",
     "Alpha": "_seeking.sentiment.url_"
   },
-  "Stocks": [ "AMD", "GOOG", "FB", "MMM", "CAT", "AMZN", "INTC", "PM", "MS", "JPM", "MU", "TSLA" ]
+  "Stocks": [ "_stocks_" ]
 }

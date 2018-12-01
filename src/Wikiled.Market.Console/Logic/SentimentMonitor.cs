@@ -37,8 +37,8 @@ namespace Wikiled.Market.Console.Logic
             Task twitterTask = 
                 ProcessSentiment(stockItems, "Twitter", 6, stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
 
-            Task seekingAlpha = 
-                ProcessSentiment(stockItems, "SeekingAlpha Editors", 24, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article), CancellationToken.None));
+            Task seekingAlpha =
+                ProcessSentiment(stockItems, "SeekingAlpha Editors", 48, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article) {Steps = new []{48}}, CancellationToken.None));
 
             Task seekingAlphaComments = 
                 ProcessSentiment(stockItems, "SeekingAlpha Comments", 24, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));

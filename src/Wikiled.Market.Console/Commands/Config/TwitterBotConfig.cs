@@ -26,13 +26,16 @@ namespace Wikiled.Market.Console.Commands.Config
 
         public bool IsService { get; set; }
 
+        public bool IsDev{ get; set; }
+
         public ApplicationConfig ApplicationConfig { get; private set; }
 
         public void Build(ContainerBuilder builder)
         {
-            ApplicationConfig = LoadConfig();
+            ApplicationConfig = LoadConfig(IsDev ? "service.dev.json" : "service.json");
             builder.RegisterModule(new CommonModule());
             builder.RegisterModule<AnalysisModule>();
+            builder.RegisterModule<TwitterModule>();
             builder.RegisterType<Credentials>();
 
             builder.RegisterType<ConfigurationValidator>().AsSelf().AutoActivate();
@@ -62,16 +65,17 @@ namespace Wikiled.Market.Console.Commands.Config
                 .Named<IApiClientFactory>("Seeking");
         }
 
-        private ApplicationConfig LoadConfig()
+        private ApplicationConfig LoadConfig(string file)
         {
             string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            if (!File.Exists(Path.Combine(directory, "service.json")))
+            file = Path.Combine(directory, file);
+            if (!File.Exists(file))
             {
                 throw new Exception("Configuration file service.json not found");
 
             }
 
-            return JsonConvert.DeserializeObject<ApplicationConfig>(File.ReadAllText(Path.Combine(directory, "service.json")));
+            return JsonConvert.DeserializeObject<ApplicationConfig>(File.ReadAllText(file));
         }
     }
 }
