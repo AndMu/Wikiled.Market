@@ -72,7 +72,7 @@ namespace Wikiled.Market.Console.Logic
                 }
             }
 
-            var message = new MultiItemMessage($"Average sentiment (from {type}):", messages.ToArray());
+            var message = new MultiItemMessage($"Average sentiment (from {type}) ({hours}H):", messages.ToArray());
             publisher.PublishMessage(message);
         }
     }
