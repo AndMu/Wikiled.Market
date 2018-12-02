@@ -12,7 +12,6 @@ namespace Wikiled.Market.Console
     {
         public static async Task Main(string[] args)
         {
-            NLog.LogManager.LoadConfiguration("nlog.config");
             var starter = new AutoStarter("Market Utility", args);
             starter.Factory.AddNLog();
             starter.RegisterCommand<TwitterBotCommand, TwitterBotConfig>("bot");
