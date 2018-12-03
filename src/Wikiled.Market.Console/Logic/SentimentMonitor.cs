@@ -27,6 +27,7 @@ namespace Wikiled.Market.Console.Logic
         public SentimentMonitor(ILogger<SentimentMonitor> log, ITwitterAnalysis twitterAnalysis, IAlphaAnalysis alpha, IPublisher publisher)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
+            log.LogDebug("SentimentMonitor");
             this.twitterAnalysis = twitterAnalysis ?? throw new ArgumentNullException(nameof(twitterAnalysis));
             this.alpha = alpha ?? throw new ArgumentNullException(nameof(alpha));
             this.publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
@@ -34,14 +35,9 @@ namespace Wikiled.Market.Console.Logic
 
         public async Task ProcessSentimentAll(string[] stockItems)
         {
-            Task twitterTask = 
-                ProcessSentiment(stockItems, "Twitter", 6, stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
-
-            Task seekingAlpha =
-                ProcessSentiment(stockItems, "SeekingAlpha Editors", 48, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article) {Steps = new []{48}}, CancellationToken.None));
-
-            Task seekingAlphaComments = 
-                ProcessSentiment(stockItems, "SeekingAlpha Comments", 24, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
+            Task twitterTask = ProcessSentiment(stockItems, "Twitter", 6, stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
+            Task seekingAlpha = ProcessSentiment(stockItems, "SeekingAlpha Editors", 48, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article) {Steps = new []{48}}, CancellationToken.None));
+            Task seekingAlphaComments = ProcessSentiment(stockItems, "SeekingAlpha Comments", 24, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
 
             await Task.WhenAll(twitterTask, seekingAlphaComments, seekingAlpha).ConfigureAwait(false);
         }

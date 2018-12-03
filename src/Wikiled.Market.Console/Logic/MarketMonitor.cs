@@ -32,7 +32,7 @@ namespace Wikiled.Market.Console.Logic
 
         public async Task ProcessMarket(string[] stockItems)
         {
-            log.LogInformation("Processing market");
+            log.LogDebug("Processing market");
             foreach (string stock in stockItems)
             {
                 log.LogInformation("Processing {0}", stock);
