@@ -38,7 +38,7 @@ namespace Wikiled.Market.Console.Commands.Config
             builder.RegisterModule<AnalysisModule>();
             builder.RegisterModule<TwitterModule>();
             builder.RegisterType<Credentials>();
-            builder.RegisterType<SentimentChartGeneration>().As<ISentimentChartGeneration>();
+            builder.RegisterType<TwitterChartGeneration>().As<ISentimentChartGeneration>();
             builder.RegisterType<DayChartGenerator>().As<IDayChartGenerator>();
 
             builder.RegisterType<ConfigurationValidator>().AsSelf().AutoActivate();

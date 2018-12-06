@@ -24,6 +24,10 @@ namespace Wikiled.Market.Integration.Tests.Logic.Charts
             config.Build(builder);
             var container = builder.Build();
             var generation = container.Resolve<ISentimentChartGeneration>();
+            await generation.AddStock("AMD");
+            await generation.AddStock("TSLA");
+            await generation.AddStock("AMZN");
+            await generation.AddStock("FB");
             var chart = await generation.Generate().ConfigureAwait(false);
             await File.WriteAllBytesAsync(Path.Combine(TestContext.CurrentContext.TestDirectory, @"chart.jpg"), chart, CancellationToken.None).ConfigureAwait(false);
         }

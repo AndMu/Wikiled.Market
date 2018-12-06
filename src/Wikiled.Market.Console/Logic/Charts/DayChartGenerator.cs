@@ -12,7 +12,7 @@ namespace Wikiled.Market.Console.Logic.Charts
     {
         private readonly LineChart lineChart;
 
-        private readonly DatasetHelper2 dataset = new DatasetHelper2(new DayOfWeekSampling());
+        private readonly DatasetHelper dataset = new DatasetHelper(new DayOfWeekSampling());
 
         public DayChartGenerator(string name)
         {
@@ -23,10 +23,9 @@ namespace Wikiled.Market.Console.Logic.Charts
 
             lineChart = new LineChart(500, 300);
             lineChart.SetTitle($"Sentiment Data: {name}", Colors.Black, 14);
-            lineChart.AddLineStyleAll(new LineStyle(5, 0, 0));
+            lineChart.AddLineStyleAll(new LineStyle(50, 0, 0));
             lineChart.AddRangeMarker(new RangeMarker(RangeMarkerType.Horizontal, Colors.Black, 0.499, 0.501));
             lineChart.AddAxis(new ChartAxis(ChartAxisType.Left).SetRange(-1, 1));
-            lineChart.SetLegend(new[] { "AMD" });
         }
 
         public void AddSeriesByDay(string name, RatingRecord[] records)

@@ -9,7 +9,7 @@
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="Accord.Math" Version="3.8.0" />
     <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="CsvHelper" Version="11.0.1" />
+    <PackageReference Include="CsvHelper" Version="12.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
     <PackageReference Include="Trady.Analysis" Version="3.2.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.2.0" />
