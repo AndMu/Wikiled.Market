@@ -15,7 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Wikiled.Market.Console\Wikiled.Market.Console.csproj" />
     <ProjectReference Include="..\Wikiled.Market\Wikiled.Market.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="service.dev.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

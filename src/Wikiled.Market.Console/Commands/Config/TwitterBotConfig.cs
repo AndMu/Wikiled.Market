@@ -11,6 +11,7 @@ using Wikiled.Console.Arguments;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Config;
 using Wikiled.Market.Console.Logic;
+using Wikiled.Market.Console.Logic.Charts;
 using Wikiled.Market.Modules;
 using Wikiled.SeekingAlpha.Api.Service;
 using Wikiled.Twitter.Modules;
@@ -26,7 +27,7 @@ namespace Wikiled.Market.Console.Commands.Config
 
         public bool IsService { get; set; }
 
-        public bool IsDev{ get; set; }
+        public bool IsDev { get; set; }
 
         public ApplicationConfig ApplicationConfig { get; private set; }
 
@@ -37,6 +38,8 @@ namespace Wikiled.Market.Console.Commands.Config
             builder.RegisterModule<AnalysisModule>();
             builder.RegisterModule<TwitterModule>();
             builder.RegisterType<Credentials>();
+            builder.RegisterType<SentimentChartGeneration>().As<ISentimentChartGeneration>();
+            builder.RegisterType<DayChartGenerator>().As<IDayChartGenerator>();
 
             builder.RegisterType<ConfigurationValidator>().AsSelf().AutoActivate();
 
