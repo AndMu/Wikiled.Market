@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac.Features.Indexed;
 using Microsoft.Extensions.Logging;
-using Wikiled.Twitter.Monitor.Api.Service;
+using Wikiled.Sentiment.Tracking.Api.Request;
+using Wikiled.Sentiment.Tracking.Api.Service;
 
 namespace Wikiled.Market.Console.Logic.Charts
 {
@@ -10,13 +13,11 @@ namespace Wikiled.Market.Console.Logic.Charts
     {
         private readonly ILogger<TwitterChartGeneration> log;
 
-        private readonly ITwitterAnalysis twitterAnalysis;
+        private readonly ISentimentTracking twitterAnalysis;
 
         private readonly IDayChartGenerator generator;
 
-        public TwitterChartGeneration(ILogger<TwitterChartGeneration> log,
-                                      ITwitterAnalysis twitterAnalysis,
-                                      Func<string, IDayChartGenerator> generatorFactory)
+        public TwitterChartGeneration(ILogger<TwitterChartGeneration> log, IIndex<string, ISentimentTracking> twitterAnalysis, Func<string, IDayChartGenerator> generatorFactory)
         {
             if (generatorFactory == null)
             {
@@ -25,21 +26,32 @@ namespace Wikiled.Market.Console.Logic.Charts
 
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             generator = generatorFactory("Twitter");
-            this.twitterAnalysis = twitterAnalysis ?? throw new ArgumentNullException(nameof(twitterAnalysis));
+            this.twitterAnalysis = twitterAnalysis?["Twitter"] ?? throw new ArgumentNullException(nameof(twitterAnalysis));
         }
 
-        public async Task AddStock(string stock)
+        public async Task AddStocks(string[] stocks)
         {
-            if (stock == null)
+            if (stocks == null)
             {
-                throw new ArgumentNullException(nameof(stock));
+                throw new ArgumentNullException(nameof(stocks));
             }
 
-            log.LogDebug("AddStock {0}", stock);
-            var data = await twitterAnalysis.GetTrackingHistory($"${stock}", 24 * 5, CancellationToken.None).ConfigureAwait(false);
+            if (stocks.Length == 0)
+            {
+                throw new ArgumentException("Value cannot be an empty collection.", nameof(stocks));
+            }
+
+            log.LogDebug("AddStock {0}", stocks.Length);
+            var items = stocks.Select(item => $"${item}").ToArray();
+            var data = await twitterAnalysis
+                .GetTrackingHistory(new SentimentRequest(items) { Hour = 24 * 5 }, CancellationToken.None)
+                .ConfigureAwait(false);
             lock (generator)
             {
-                generator.AddSeriesByDay(stock, data);
+                foreach (var ratingRecords in data)
+                {
+                    generator.AddSeriesByDay(ratingRecords.Key, ratingRecords.Value);
+                }
             }
         }
 

@@ -3,12 +3,13 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac.Features.Indexed;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Commands;
+using Wikiled.Sentiment.Tracking.Api.Service;
 using Wikiled.Sentiment.Tracking.Logic;
 using Wikiled.Text.Analysis.Twitter;
 using Wikiled.Twitter.Communication;
-using Wikiled.Twitter.Monitor.Api.Service;
 
 namespace Wikiled.Market.Console.Logic
 {
@@ -16,16 +17,16 @@ namespace Wikiled.Market.Console.Logic
     {
         private readonly ILogger<TwitterBotCommand> log;
 
-        private readonly ITwitterAnalysis twitterAnalysis;
+        private readonly ISentimentTracking twitterAnalysis;
 
         private readonly IPublisher publisher;
 
         private readonly Func<IAnalysisManager> instance;
 
-        public MarketMonitor(ILogger<TwitterBotCommand> log, ITwitterAnalysis twitterAnalysis, Func<IAnalysisManager> instance, IPublisher publisher)
+        public MarketMonitor(ILogger<TwitterBotCommand> log, IIndex<string, ISentimentTracking> twitterAnalysis, Func<IAnalysisManager> instance, IPublisher publisher)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
-            this.twitterAnalysis = twitterAnalysis ?? throw new ArgumentNullException(nameof(twitterAnalysis));
+            this.twitterAnalysis = twitterAnalysis?["Twitter"] ?? throw new ArgumentNullException(nameof(twitterAnalysis));
             this.instance = instance ?? throw new ArgumentNullException(nameof(instance));
             this.publisher = publisher;
         }

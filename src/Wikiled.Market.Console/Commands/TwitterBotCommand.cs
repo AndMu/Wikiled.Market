@@ -66,7 +66,10 @@ namespace Wikiled.Market.Console.Commands
             }
 
             timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => marketMonitor.ProcessMarket(stockItems)).Subscribe();
-            twitterTimer = Observable.Interval(TimeSpan.FromHours(3)).StartWith(1).Select(item => sentimentMonitor.ProcessSentimentAll(stockItems)).Subscribe();
+            twitterTimer = timerCreator.Daily(TimeSpan.FromHours(9), TimeSpan.FromHours(14), TimeSpan.FromHours(21))
+                .StartWith(1)
+                .Select(item => sentimentMonitor.ProcessSentimentAll(stockItems))
+                .Subscribe();
         }
     }
 }

@@ -13,9 +13,8 @@ using Wikiled.Market.Console.Config;
 using Wikiled.Market.Console.Logic;
 using Wikiled.Market.Console.Logic.Charts;
 using Wikiled.Market.Modules;
-using Wikiled.SeekingAlpha.Api.Service;
+using Wikiled.Sentiment.Tracking.Api.Service;
 using Wikiled.Twitter.Modules;
-using Wikiled.Twitter.Monitor.Api.Service;
 using Wikiled.Twitter.Security;
 
 namespace Wikiled.Market.Console.Commands.Config
@@ -55,13 +54,13 @@ namespace Wikiled.Market.Console.Commands.Config
                 builder.RegisterModule(new ConsoleAuthModule());
             }
 
-            builder.Register(ctx => new TwitterAnalysis(ctx.ResolveNamed<IApiClientFactory>("Twitter"))).As<ITwitterAnalysis>();
+            builder.Register(ctx => new SentimentTracking(ctx.ResolveNamed<IApiClientFactory>("Twitter"))).Keyed<ISentimentTracking>("Twitter");
             builder.Register(ctx => new ApiClientFactory(
                                  new HttpClient { Timeout = TimeSpan.FromMinutes(5) },
                                  new Uri(ApplicationConfig.Sentiment.Service)))
                 .Named<IApiClientFactory>("Twitter");
 
-            builder.Register(ctx => new AlphaAnalysis(ctx.ResolveNamed<IApiClientFactory>("Seeking"))).As<IAlphaAnalysis>();
+            builder.Register(ctx => new SentimentTracking(ctx.ResolveNamed<IApiClientFactory>("Seeking"))).Keyed<ISentimentTracking>("Seeking");
             builder.Register(ctx => new ApiClientFactory(
                                  new HttpClient { Timeout = TimeSpan.FromMinutes(5) },
                                  new Uri(ApplicationConfig.Sentiment.Alpha)))
