@@ -15,7 +15,7 @@ namespace Wikiled.Market.Console
             var starter = new AutoStarter("Market Utility", args);
             starter.Factory.AddNLog(new NLogProviderOptions {CaptureMessageProperties = true, IncludeScopes = true});
             starter.RegisterCommand<TwitterBotCommand, TwitterBotConfig>("bot");
-            starter.RegisterCommand<GeneratePredictionCommand, GeneratePredictionConfig>("Generate");
+            starter.RegisterCommand<GeneratePredictionCommand, GeneratePredictionConfig>("generate");
 
             var hostBuilder = new HostBuilder()
                 .ConfigureServices((hostContext, services) =>

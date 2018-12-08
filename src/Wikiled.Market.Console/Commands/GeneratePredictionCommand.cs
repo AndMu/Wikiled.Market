@@ -8,6 +8,9 @@ using Wikiled.Market.Console.Commands.Config;
 
 namespace Wikiled.Market.Console.Commands
 {
+    /// <summary>
+    /// generate -Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,AXP,KO,INTC,PM,TIF,WFC,MS,JPM
+    /// </summary>
     [Description("Generate Command")]
     public class GeneratePredictionCommand : Command
     {

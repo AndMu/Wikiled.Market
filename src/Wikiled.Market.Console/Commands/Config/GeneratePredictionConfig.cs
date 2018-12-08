@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Autofac;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.Console.Arguments;

@@ -16,9 +16,9 @@
     <PackageReference Include="Wikiled.Arff" Version="2.2.7" />
     <PackageReference Include="Wikiled.Common" Version="1.1.4" />
     <PackageReference Include="Wikiled.Common.Net" Version="1.1.10" />
-    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.7" />
+    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.10" />
     <PackageReference Include="Wikiled.MachineLearning" Version="2.4.0" />
-    <PackageReference Include="Wikiled.Twitter" Version="1.5.2" />
+    <PackageReference Include="Wikiled.Twitter" Version="1.5.4" />
   </ItemGroup>
 
 </Project>

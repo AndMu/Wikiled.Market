@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Wikiled.Market.Analysis;
 using Wikiled.Market.Console.Commands;
+using Wikiled.Sentiment.Tracking.Api.Request;
 using Wikiled.Sentiment.Tracking.Api.Service;
-using Wikiled.Sentiment.Tracking.Logic;
 using Wikiled.Text.Analysis.Twitter;
 using Wikiled.Twitter.Communication;
 
@@ -34,25 +35,26 @@ namespace Wikiled.Market.Console.Logic
         public async Task ProcessMarket(string[] stockItems)
         {
             log.LogDebug("Processing market");
+            var sentimentTask = await twitterAnalysis.GetTrackingResults(new SentimentRequest(stockItems.Select(item => $"${item}").ToArray()) {Hours = new[] {24}}, CancellationToken.None)
+                                                     .ConfigureAwait(false);
             foreach (string stock in stockItems)
             {
                 log.LogInformation("Processing {0}", stock);
-                Task<TrackingResults> sentimentTask = twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None);
+
                 PredictionResult result = await instance().Start(stock).ConfigureAwait(false);
                 double sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
                 double buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;
                 string header = $"${stock} trading signals ({sellAccuracy * 100:F0}%/{buyAccuracy * 100:F0}%)";
                 StringBuilder text = new StringBuilder();
-                TrackingResults sentiment = await sentimentTask.ConfigureAwait(false);
-                if (sentiment != null)
+
+                if (sentimentTask.TryGetValue($"${stock}", out var sentiment))
                 {
-                    if (sentiment.Sentiment.TryGetValue("24H", out TrackingResult sentimentValue))
-                    {
-                        text.AppendFormat("Average sentiment: {2}{0:F2}({1})\r\n",
-                                          sentimentValue.Average,
-                                          sentimentValue.TotalMessages,
-                                          sentimentValue.GetEmoji());
-                    }
+                    var sentimentValue = sentiment.First();
+                    text.AppendFormat(
+                        "Average sentiment: {2}{0:F2}({1})\r\n",
+                        sentimentValue.Average,
+                        sentimentValue.TotalMessages,
+                        sentimentValue.GetEmoji());
                 }
                 else
                 {
@@ -67,7 +69,7 @@ namespace Wikiled.Market.Console.Logic
                     text.AppendFormat("T-{0}: {2}{1}\r\n", i, prediction, icon);
                 }
 
-                MultiItemMessage message = new MultiItemMessage(header, new[] { text.ToString() });
+                MultiItemMessage message = new MultiItemMessage(header, new[] {text.ToString()});
                 publisher.PublishMessage(message);
             }
         }

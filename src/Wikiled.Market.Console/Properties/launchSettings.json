@@ -2,7 +2,7 @@
   "profiles": {
     "Wikiled.Market.Console": {
       "commandName": "Project",
-      "commandLineArgs": "bot -Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,AXP,KO,INTC,PM,TIF,WFC,MS,JPM -IsService -IsDev"
+      "commandLineArgs": " bot -Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,AXP,KO,INTC,PM,TIF,WFC,MS,JPM -IsDev"
     }
   }
 }

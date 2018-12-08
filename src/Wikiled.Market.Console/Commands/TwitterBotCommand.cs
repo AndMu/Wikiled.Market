@@ -11,7 +11,7 @@ using Wikiled.Market.Console.Logic;
 namespace Wikiled.Market.Console.Commands
 {
     /// <summary>
-    /// Wikiled.Market.Console.exe bot -Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,AXP,KO,INTC,PM,TIF,WFC,MS,JPM
+    /// bot -Stocks=AMD,GOOG,FB,MMM,CAT,AMZN,AXP,KO,INTC,PM,TIF,WFC,MS,JPM
     /// </summary>
     public class TwitterBotCommand : Command
     {

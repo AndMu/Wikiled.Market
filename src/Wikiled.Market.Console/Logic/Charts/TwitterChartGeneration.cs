@@ -44,7 +44,7 @@ namespace Wikiled.Market.Console.Logic.Charts
             log.LogDebug("AddStock {0}", stocks.Length);
             var items = stocks.Select(item => $"${item}").ToArray();
             var data = await twitterAnalysis
-                .GetTrackingHistory(new SentimentRequest(items) { Hour = 24 * 5 }, CancellationToken.None)
+                .GetTrackingHistory(new SentimentRequest(items) { Hours = new []{24 * 5} }, CancellationToken.None)
                 .ConfigureAwait(false);
             lock (generator)
             {

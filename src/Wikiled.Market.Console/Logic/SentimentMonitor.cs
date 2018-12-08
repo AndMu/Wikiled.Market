@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac.Features.Indexed;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Wikiled.SeekingAlpha.Api.Request;
-using Wikiled.SeekingAlpha.Api.Service;
+using Wikiled.Sentiment.Tracking.Api.Request;
+using Wikiled.Sentiment.Tracking.Api.Service;
 using Wikiled.Sentiment.Tracking.Logic;
 using Wikiled.Twitter.Communication;
-using Wikiled.Twitter.Monitor.Api.Service;
 
 namespace Wikiled.Market.Console.Logic
 {
@@ -16,49 +16,67 @@ namespace Wikiled.Market.Console.Logic
     {
         private readonly ILogger<SentimentMonitor> log;
 
-        private readonly ITwitterAnalysis twitterAnalysis;
+        private readonly ISentimentTracking twitterAnalysis;
 
-        private readonly IAlphaAnalysis alpha;
+        private readonly ISentimentTracking alpha;
 
         private readonly IPublisher publisher;
 
-        private readonly PolicyBuilder<TrackingResults> policy = Policy.HandleResult<TrackingResults>(r => r == null);
-
-        public SentimentMonitor(ILogger<SentimentMonitor> log, ITwitterAnalysis twitterAnalysis, IAlphaAnalysis alpha, IPublisher publisher)
+        public SentimentMonitor(ILogger<SentimentMonitor> log, IIndex<string, ISentimentTracking> factory, IPublisher publisher)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             log.LogDebug("SentimentMonitor");
-            this.twitterAnalysis = twitterAnalysis ?? throw new ArgumentNullException(nameof(twitterAnalysis));
-            this.alpha = alpha ?? throw new ArgumentNullException(nameof(alpha));
+            twitterAnalysis = factory["Twitter"] ?? throw new ArgumentNullException(nameof(twitterAnalysis));
+            alpha = factory["Seeking"] ?? throw new ArgumentNullException(nameof(alpha));
             this.publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         }
 
         public async Task ProcessSentimentAll(string[] stockItems)
         {
-            Task twitterTask = ProcessSentiment(stockItems, "Twitter", 6, stock => twitterAnalysis.GetTrackingResults($"${stock}", CancellationToken.None));
-            Task seekingAlpha = ProcessSentiment(stockItems, "SeekingAlpha Editors", 48, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Article) {Steps = new []{48}}, CancellationToken.None));
-            Task seekingAlphaComments = ProcessSentiment(stockItems, "SeekingAlpha Comments", 24, stock => alpha.GetTrackingResults(new SentimentRequest(stock, SentimentType.Comment), CancellationToken.None));
-
-            await Task.WhenAll(twitterTask, seekingAlphaComments, seekingAlpha).ConfigureAwait(false);
+            PublishSentiment(await Get(twitterAnalysis, stockItems.Select(item => $"${item}").ToArray(), 6).ConfigureAwait(false), "Twitter 6H");
+            PublishSentiment(await Get(twitterAnalysis, stockItems, 48, "Article").ConfigureAwait(false), "SeekingAlpha Editors");
+            PublishSentiment(await Get(twitterAnalysis, stockItems, 24, "Comment").ConfigureAwait(false), "SeekingAlpha Comments");
         }
 
-        private async Task ProcessSentiment(string[] stockItems, string type, int hours, Func<string, Task<TrackingResults>> retrieve)
+        private Task<IDictionary<string, TrackingResult[]>> Get(ISentimentTracking tracker, string[] keywords, int hours, string type = null)
+        {
+            try
+            {
+                return tracker.GetTrackingResults(new SentimentRequest(keywords) {Hours = new[] {hours}, Type = type}, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error");
+            }
+
+            return null;
+        }
+
+        private void PublishSentiment(IDictionary<string, TrackingResult[]> retrieve, string type)
         {
             log.LogInformation("Retrieving sentiment {0}...", type);
-            List<string> messages = new List<string>();
-            foreach (string stock in stockItems)
+            if (retrieve == null ||
+                retrieve.Count == 0)
             {
-                TrackingResults sentiment = await policy.RetryAsync(3)
-                    .ExecuteAsync(() => retrieve(stock))
-                    .ConfigureAwait(false);
-                if (sentiment != null)
+                log.LogWarning("Nothing to process - {0}", type);
+                return;
+            }
+
+            List<string> messages = new List<string>();
+            foreach (var stock in retrieve)
+            {
+                if (stock.Value != null)
                 {
-                    if (sentiment.Sentiment.ContainsKey($"{hours}H"))
+                    foreach (var record in stock.Value)
                     {
-                        TrackingResult value = sentiment.Sentiment[$"{hours}H"];
-                        if (value.TotalMessages > 0)
+                        if (record.TotalMessages > 0)
                         {
-                            messages.Add($"${stock}: {value.GetEmoji()}{value.Average:F2}({value.TotalMessages})");
+                            messages.Add($"{stock.Key}: {record.GetEmoji()}{record.Average:F2}({record.TotalMessages})");
                         }
                     }
                 }
@@ -68,7 +86,7 @@ namespace Wikiled.Market.Console.Logic
                 }
             }
 
-            var message = new MultiItemMessage($"Average sentiment (from {type}) ({hours}H):", messages.ToArray());
+            var message = new MultiItemMessage($"Average sentiment (from {type}) ():", messages.ToArray());
             publisher.PublishMessage(message);
         }
     }
