@@ -39,7 +39,9 @@ namespace Wikiled.Market.Console.Logic
         public async Task ProcessSentimentAll(string[] stockItems)
         {
             PublishSentiment(await Get(twitterAnalysis, stockItems.Select(item => $"${item}").ToArray(), 6).ConfigureAwait(false), "Twitter 6H");
+            await Task.Delay(TimeSpan.FromMinutes(15)).ConfigureAwait(false);
             PublishSentiment(await Get(alpha, stockItems, 48, "Article").ConfigureAwait(false), "SeekingAlpha Editors");
+            await Task.Delay(TimeSpan.FromMinutes(15)).ConfigureAwait(false);
             PublishSentiment(await Get(alpha, stockItems, 24, "Comment").ConfigureAwait(false), "SeekingAlpha Comments");
         }
 

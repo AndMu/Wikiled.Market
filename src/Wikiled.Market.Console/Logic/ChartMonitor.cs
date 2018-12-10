@@ -60,7 +60,6 @@ namespace Wikiled.Market.Console.Logic
 
             foreach (var batch in selected.Batch(5))
             {
-
                 var currentBlock = batch.ToArray();
                 IDayChartGenerator chart = chartFactory(name);
                 foreach (var pair in currentBlock)
@@ -77,6 +76,7 @@ namespace Wikiled.Market.Console.Logic
 
                 MediaMessage message = new MediaMessage(name, image);
                 publisher.PublishMessage(message);
+                await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
             }
         }
     }
