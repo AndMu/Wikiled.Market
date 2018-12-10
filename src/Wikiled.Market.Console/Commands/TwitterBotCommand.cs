@@ -70,12 +70,12 @@ namespace Wikiled.Market.Console.Commands
 
             var timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => marketMonitor.ProcessMarket(stockItems)).Subscribe();
             disposable.Add(timer);
-            timer = timerCreator.Daily(TimeSpan.FromHours(8), TimeSpan.FromHours(13))
+            timer = timerCreator.Daily(TimeSpan.FromHours(12))
                                        .StartWith(1)
                                        .Select(item => chartMonitor.ProcessMarket(stockItems))
                                        .Subscribe();
             disposable.Add(timer);
-            timer = timerCreator.Daily(TimeSpan.FromHours(9), TimeSpan.FromHours(14), TimeSpan.FromHours(21))
+            timer = timerCreator.Daily(TimeSpan.FromHours(9), TimeSpan.FromHours(14))
                 .StartWith(1)
                 .Select(item => sentimentMonitor.ProcessSentimentAll(stockItems))
                 .Subscribe();
