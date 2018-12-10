@@ -37,13 +37,13 @@ namespace Wikiled.Market.Console.Commands.Config
             builder.RegisterModule<AnalysisModule>();
             builder.RegisterModule<TwitterModule>();
             builder.RegisterType<Credentials>();
-            builder.RegisterType<TwitterChartGeneration>().As<ISentimentChartGeneration>();
             builder.RegisterType<DayChartGenerator>().As<IDayChartGenerator>();
 
             builder.RegisterType<ConfigurationValidator>().AsSelf().AutoActivate();
 
             builder.RegisterType<SentimentMonitor>().As<ISentimentMonitor>();
             builder.RegisterType<MarketMonitor>().As<IMarketMonitor>();
+            builder.RegisterType<ChartMonitor>().As<IChartMonitor>();
 
             if (IsService)
             {

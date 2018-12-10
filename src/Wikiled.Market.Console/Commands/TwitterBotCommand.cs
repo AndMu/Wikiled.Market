@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,9 +18,7 @@ namespace Wikiled.Market.Console.Commands
     {
         private readonly ILogger<TwitterBotCommand> log;
 
-        private IDisposable timer;
-
-        private IDisposable twitterTimer;
+        private readonly CompositeDisposable disposable = new CompositeDisposable();
 
         private readonly TwitterBotConfig botConfig;
 
@@ -29,23 +28,27 @@ namespace Wikiled.Market.Console.Commands
 
         private readonly ISentimentMonitor sentimentMonitor;
 
-        public TwitterBotCommand(ILogger<TwitterBotCommand> log,
-                                 TwitterBotConfig botConfig,
-                                 IObservableTimer timerCreator,
-                                 IMarketMonitor marketMonitor,
-                                 ISentimentMonitor sentimentMonitor)
+        private IChartMonitor chartMonitor;
+
+        public TwitterBotCommand(
+            ILogger<TwitterBotCommand> log,
+            TwitterBotConfig botConfig,
+            IObservableTimer timerCreator,
+            IMarketMonitor marketMonitor,
+            ISentimentMonitor sentimentMonitor,
+            IChartMonitor chartMonitor)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             this.botConfig = botConfig ?? throw new ArgumentNullException(nameof(botConfig));
             this.timerCreator = timerCreator ?? throw new ArgumentNullException(nameof(timerCreator));
             this.marketMonitor = marketMonitor ?? throw new ArgumentNullException(nameof(marketMonitor));
             this.sentimentMonitor = sentimentMonitor ?? throw new ArgumentNullException(nameof(sentimentMonitor));
+            this.chartMonitor = chartMonitor ?? throw new ArgumentNullException(nameof(chartMonitor));
         }
 
         public override Task StopExecution(CancellationToken token)
         {
-            timer?.Dispose();
-            twitterTimer?.Dispose();
+            disposable.Dispose();
             return base.StopExecution(token);
         }
 
@@ -65,11 +68,18 @@ namespace Wikiled.Market.Console.Commands
                 stockItems = botConfig.Stocks.Split(",");
             }
 
-            timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => marketMonitor.ProcessMarket(stockItems)).Subscribe();
-            twitterTimer = timerCreator.Daily(TimeSpan.FromHours(9), TimeSpan.FromHours(14), TimeSpan.FromHours(21))
+            var timer = timerCreator.Daily(TimeSpan.FromHours(6)).Select(item => marketMonitor.ProcessMarket(stockItems)).Subscribe();
+            disposable.Add(timer);
+            timer = timerCreator.Daily(TimeSpan.FromHours(8), TimeSpan.FromHours(13))
+                                       .StartWith(1)
+                                       .Select(item => chartMonitor.ProcessMarket(stockItems))
+                                       .Subscribe();
+            disposable.Add(timer);
+            timer = timerCreator.Daily(TimeSpan.FromHours(9), TimeSpan.FromHours(14), TimeSpan.FromHours(21))
                 .StartWith(1)
                 .Select(item => sentimentMonitor.ProcessSentimentAll(stockItems))
                 .Subscribe();
+            disposable.Add(timer);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Wikiled.Market.Console.Logic.Charts
 {
     public interface IDayChartGenerator
     {
-        void AddSeriesByDay(string name, RatingRecord[] records);
+        void AddSeriesByDay(string name, RatingRecord[] records, int days);
 
         Task<byte[]> GenerateGraph();
     }

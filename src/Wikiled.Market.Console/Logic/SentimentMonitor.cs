@@ -39,8 +39,8 @@ namespace Wikiled.Market.Console.Logic
         public async Task ProcessSentimentAll(string[] stockItems)
         {
             PublishSentiment(await Get(twitterAnalysis, stockItems.Select(item => $"${item}").ToArray(), 6).ConfigureAwait(false), "Twitter 6H");
-            PublishSentiment(await Get(twitterAnalysis, stockItems, 48, "Article").ConfigureAwait(false), "SeekingAlpha Editors");
-            PublishSentiment(await Get(twitterAnalysis, stockItems, 24, "Comment").ConfigureAwait(false), "SeekingAlpha Comments");
+            PublishSentiment(await Get(alpha, stockItems, 48, "Article").ConfigureAwait(false), "SeekingAlpha Editors");
+            PublishSentiment(await Get(alpha, stockItems, 24, "Comment").ConfigureAwait(false), "SeekingAlpha Comments");
         }
 
         private Task<IDictionary<string, TrackingResult[]>> Get(ISentimentTracking tracker, string[] keywords, int hours, string type = null)
@@ -76,7 +76,7 @@ namespace Wikiled.Market.Console.Logic
                     {
                         if (record.TotalMessages > 0)
                         {
-                            messages.Add($"{stock.Key}: {record.GetEmoji()}{record.Average:F2}({record.TotalMessages})");
+                            messages.Add($"{record.GetEmoji()} {stock.Key}: {record.Average:F2}({record.TotalMessages})");
                         }
                     }
                 }
@@ -86,7 +86,7 @@ namespace Wikiled.Market.Console.Logic
                 }
             }
 
-            var message = new MultiItemMessage($"Average sentiment (from {type}) ():", messages.ToArray());
+            var message = new MultiItemMessage($"Average sentiment ({type}):", messages.ToArray());
             publisher.PublishMessage(message);
         }
     }
