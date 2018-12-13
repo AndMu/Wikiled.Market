@@ -69,7 +69,7 @@ namespace Wikiled.Market.Console.Logic
                 return;
             }
 
-            List<string> messages = new List<string>();
+            var messages = new List<string>();
             foreach (var stock in retrieve)
             {
                 if (stock.Value != null)

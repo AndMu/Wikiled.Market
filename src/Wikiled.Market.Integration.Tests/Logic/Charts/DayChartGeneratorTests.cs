@@ -22,8 +22,8 @@ namespace Wikiled.Market.Integration.Tests.Logic.Charts
         [Test]
         public async Task Generate()
         {
-            ContainerBuilder builder = new ContainerBuilder();
-            TwitterBotConfig config = new TwitterBotConfig();
+            var builder = new ContainerBuilder();
+            var config = new TwitterBotConfig();
             config.IsDev = true;
             config.IsService = true;
             builder.RegisterModule(new LoggingModule(new NullLoggerFactory()));

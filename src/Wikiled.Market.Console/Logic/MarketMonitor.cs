@@ -45,7 +45,7 @@ namespace Wikiled.Market.Console.Logic
                 double sellAccuracy = result.Performance.PerClassMatrices[0].Accuracy;
                 double buyAccuracy = result.Performance.PerClassMatrices[1].Accuracy;
                 string header = $"${stock} trading signals ({sellAccuracy * 100:F0}%/{buyAccuracy * 100:F0}%)";
-                StringBuilder text = new StringBuilder();
+                var text = new StringBuilder();
 
                 if (sentimentTask.TryGetValue($"${stock}", out var sentiment))
                 {
@@ -69,7 +69,7 @@ namespace Wikiled.Market.Console.Logic
                     text.AppendFormat("T-{0}: {2}{1}\r\n", i, prediction, icon);
                 }
 
-                MultiItemMessage message = new MultiItemMessage(header, new[] {text.ToString()});
+                var message = new MultiItemMessage(header, new[] {text.ToString()});
                 publisher.PublishMessage(message);
             }
         }

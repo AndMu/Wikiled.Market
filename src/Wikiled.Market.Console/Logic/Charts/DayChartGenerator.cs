@@ -76,7 +76,7 @@ namespace Wikiled.Market.Console.Logic.Charts
             dataset.Rescale(point => (point * 50 / scale) + 50);
             lineChart.Populate(dataset).AdjustYScaleZero(scale, step);
             lineChart.AddLineStyleAll(new LineStyle(5, 0, 0));
-            RequestManager request = new RequestManager();
+            var request = new RequestManager();
             return request.GetImage(lineChart);
         }
     }

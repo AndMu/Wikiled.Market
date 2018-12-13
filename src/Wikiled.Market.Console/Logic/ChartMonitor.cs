@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MoreLinq.Extensions;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Market.Console.Logic.Charts;
@@ -60,10 +61,25 @@ namespace Wikiled.Market.Console.Logic
 
             foreach (var batch in selected.Batch(5))
             {
+                var messageText = new StringBuilder(name + "\r\n");
                 var currentBlock = batch.ToArray();
                 IDayChartGenerator chart = chartFactory(name);
-                foreach (var pair in currentBlock)
+
+                for (var i = 0; i < currentBlock.Length; i++)
                 {
+                    var pair = currentBlock[i];
+                    string stock = pair.Key;
+                    if (!stock.StartsWith("$"))
+                    {
+                        stock = "$" + stock;
+                    }
+
+                    if (i > 0)
+                    {
+                        messageText.Append(' ');
+                    }
+
+                    messageText.Append(stock);
                     chart.AddSeriesByDay(pair.Key, pair.Value, days);
                 }
 
@@ -74,7 +90,7 @@ namespace Wikiled.Market.Console.Logic
                     return;
                 }
 
-                MediaMessage message = new MediaMessage(name, image);
+                var message = new MediaMessage(messageText.ToString(), image);
                 publisher.PublishMessage(message);
                 await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
             }
