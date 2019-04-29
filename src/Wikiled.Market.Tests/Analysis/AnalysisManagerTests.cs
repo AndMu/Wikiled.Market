@@ -1,7 +1,6 @@
 using System;
 using Moq;
 using NUnit.Framework;
-using Trady.Core.Infrastructure;
 using Wikiled.Market.Analysis;
 
 namespace Wikiled.Market.Tests.Analysis
