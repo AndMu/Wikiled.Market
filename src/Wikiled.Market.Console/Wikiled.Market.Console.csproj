@@ -10,24 +10,24 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
-    <PackageReference Include="morelinq" Version="3.0.0" />
-    <PackageReference Include="NLog" Version="4.5.11" />
-    <PackageReference Include="Polly" Version="6.1.2" />
+    <PackageReference Include="morelinq" Version="3.1.1" />
+    <PackageReference Include="NLog" Version="4.6.2" />
+    <PackageReference Include="Polly" Version="7.1.0" />
     <PackageReference Include="System.Console" Version="4.3.1" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.1.2" />
-    <PackageReference Include="Wikiled.Common" Version="1.1.4" />
-    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.10" />
-    <PackageReference Include="Wikiled.Console" Version="1.3.11" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.1.5" />
+    <PackageReference Include="Wikiled.Common" Version="1.1.7" />
+    <PackageReference Include="Wikiled.Common.Utilities" Version="1.1.19" />
+    <PackageReference Include="Wikiled.Console" Version="1.3.23" />
     <PackageReference Include="Wikiled.Google.Chart" Version="1.0.19" />
-    <PackageReference Include="Wikiled.Sentiment.Tracking.Api" Version="1.0.6" />
+    <PackageReference Include="Wikiled.Sentiment.Tracking.Api" Version="1.0.7" />
     <PackageReference Include="Wikiled.Twitter" Version="1.5.4" />
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="Accord.Math" Version="3.8.0" />
     <PackageReference Include="Trady.Analysis" Version="3.2.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.2.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.3.0" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>

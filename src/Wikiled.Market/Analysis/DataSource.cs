@@ -6,7 +6,7 @@ using Trady.Analysis;
 using Trady.Analysis.Extension;
 using Trady.Core.Infrastructure;
 using Wikiled.Arff.Extensions;
-using Wikiled.Arff.Persistence;
+using Wikiled.Arff.Logic;
 
 namespace Wikiled.Market.Analysis
 {

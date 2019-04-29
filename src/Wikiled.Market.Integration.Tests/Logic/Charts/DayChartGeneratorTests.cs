@@ -1,12 +1,10 @@
-using Moq;
+using Autofac;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
-using Microsoft.Extensions.Logging.Abstractions;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.Market.Console.Commands.Config;
 using Wikiled.Market.Console.Logic;

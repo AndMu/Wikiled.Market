@@ -8,11 +8,11 @@
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="NUnit" Version="3.11.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.11.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
     <PackageReference Include="Trady.Analysis" Version="3.2.0" />
     <PackageReference Include="Trady.Importer.Quandl" Version="3.2.0" />
-    <packagereference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="Wikiled.Common" Version="1.1.4" />
+    <packagereference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="Wikiled.Common" Version="1.1.7" />
   </ItemGroup>
 
   <ItemGroup>

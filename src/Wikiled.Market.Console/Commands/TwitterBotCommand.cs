@@ -37,6 +37,7 @@ namespace Wikiled.Market.Console.Commands
             IMarketMonitor marketMonitor,
             ISentimentMonitor sentimentMonitor,
             IChartMonitor chartMonitor)
+        : base(log)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             this.botConfig = botConfig ?? throw new ArgumentNullException(nameof(botConfig));

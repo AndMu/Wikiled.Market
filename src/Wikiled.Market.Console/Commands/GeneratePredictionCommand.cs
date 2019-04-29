@@ -21,6 +21,7 @@ namespace Wikiled.Market.Console.Commands
         private readonly GeneratePredictionConfig config;
 
         public GeneratePredictionCommand(ILogger<GeneratePredictionCommand> log, GeneratePredictionConfig config, IAnalysisManager instance)
+            : base(log)
         {
             this.log = log;
             this.config = config;
